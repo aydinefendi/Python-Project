@@ -46,7 +46,7 @@ def round(player_card: Card, computer_card: Card, scores: dict, discard_pile: li
             winner = "tie"
 
         if winner != "tie":
-            points = player_card.number + computer_card.number
+            points = calculating_points(player_card, computer_card, previous_player_card, previous_computer_card, winner)
             scores[winner] += points
             print(f"{winner.capitalize()} wins the round and gets {points} points!")
         else:
