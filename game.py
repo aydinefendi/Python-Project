@@ -19,7 +19,10 @@ class Card:
         # If its a special card it returns its name, otherwise show colour and number
         return f"{self.colour} {self.number}" if not self.special else self.name
 
-def round(player_card: Card, computer_card: Card, scores: dict, discard_pile: list[Card]) -> tuple[dict, list[Card]]:
+def resolve_round(player_card: Card, computer_card: Card,
+          scores: dict, discard_pile: list[Card],
+          previous_player_card: Card = None,
+          previous_computer_card: Card = None) -> tuple[dict, list[Card]]:
     """
     Compares the player's and computer's cards and updates the scores and discard pile accordingly.
 
@@ -30,7 +33,7 @@ def round(player_card: Card, computer_card: Card, scores: dict, discard_pile: li
         discard_pile (list): the pile where the card played will be added.
 
     Returns:
-    tuple: Updated scores and discard pile.
+        tuple: Updated scores and discard pile.
     """
     # Show the cards played
     print(f"Player played: {player_card}")
@@ -46,16 +49,17 @@ def round(player_card: Card, computer_card: Card, scores: dict, discard_pile: li
             winner = "tie"
 
         if winner != "tie":
-            points = calculating_points(player_card, computer_card, previous_player_card, previous_computer_card, winner) 
+            points = calculate_points(player_card, computer_card, previous_player_card, previous_computer_card, winner) 
             scores[winner] += points
             print(f"{winner.capitalize()} wins the round and gets {points} points!")
         else:
-            print("It's a tie!. No points awarded.")
-    else: # If colours don't match
-        print("Colours doesn't match!. No points awarded.")
+            print("It's a tie! No points awarded.")
+    else:  # If colours don't match
+        print("Colours don't match! No points awarded.")
 
     discard_pile.append(player_card)
     discard_pile.append(computer_card)
+
     return scores, discard_pile
 
 #ID: 5670726
