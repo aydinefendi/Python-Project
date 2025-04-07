@@ -1,3 +1,5 @@
+#ID: 5670726
+
 class Card:
     """ A class to represent a single card in the game.
 
@@ -11,7 +13,7 @@ class Card:
         self.colour = colour
         self.number = number
         self.special = special
-        self.name = name #Used to identify special cards
+        self.name = name #To identify special cards
 
     def __str__(self):
         # If its a special card it returns its name, otherwise show colour and number
@@ -19,7 +21,7 @@ class Card:
 
 def round(player_card: Card, computer_card: Card, scores: dict, discard_pile: list[Card]) -> tuple[dict, list[Card]]:
     """
-    Compares the player's and computer's cards and updated the scores and discard pile accordingly.
+    Compares the player's and computer's cards and updates the scores and discard pile accordingly.
 
     Parameters:
         player_card (Card): The card chosen by the player.
@@ -30,4 +32,30 @@ def round(player_card: Card, computer_card: Card, scores: dict, discard_pile: li
     Returns:
     tuple: Updated scores and discard pile.
     """
-    
+    # Show the cards played
+    print(f"Player played: {player_card}")
+    print(f"Computer played: {computer_card}")
+
+    # Comparing numbers if colours match
+    if player_card.colour == computer_card.colour:
+        if player_card.number > computer_card.number:
+            winner = "player"
+        elif player_card.number < computer_card.number:
+            winner = "computer"
+        else:
+            winner = "tie"
+
+        if winner != "tie":
+            points = player_card.number + computer_card.number
+            scores[winner] += points
+            print(f"{winner.capitalize()} wins the round and gets {points} points!")
+        else:
+            print("It's a tie!. No points awarded.")
+    else: # If colours don't match
+        print("Colours doesn't match!. No points awarded.")
+
+    discard_pile.append(player_card)
+    discard_pile.append(computer_card)
+    return scores, discard_pile
+
+#ID: 5670726
