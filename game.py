@@ -1,3 +1,5 @@
+#ID: 5670726
+
 from typing import List
 
 def refill_hands(player_hand: List[Card], computer_hand: List[Card],
@@ -32,3 +34,5 @@ def refill_hands(player_hand: List[Card], computer_hand: List[Card],
         print(f"Hands refilled, player drew{len(player_hand)} cards, computer drew {len(computer_hand)} cards.")
 
     return player_hand, computer_hand, draw_stack, discard_pile
+
+#ID: 5670726
