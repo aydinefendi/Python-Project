@@ -1,0 +1,43 @@
+#ID: 5670726
+
+import pygame
+import sys
+import os
+from card import Card
+
+# Initialize pygame
+pygame.init()
+pygame.font.init()
+
+# Window settings
+SCREEN_WIDTH = 1000
+SCREEN_HEIGHT = 600
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT)) # Create window
+pygame.display.set_caption("War of Colours") # Set window title
+
+# Set up a font to display scores
+score_font = pygame.font.SysFont("arial", 32) 
+
+# Initial scores
+scores = {"player": 0, "computer": 0}
+
+# Function to display the scores
+def display_scores(screen, scores):
+    player_score = score_font.render(f"Player Score: {scores['player']}", True, (255, 255, 255)) # Creates a text a white text surface
+    computer_score = score_font.render(f"Computer Score: {scores['computer']}", True, (255, 255, 255))
+    screen.blit(player_score, (50, 20)) # Draws the text surface on the screen
+    screen.blit(computer_score, (700, 20))
+
+# Main game loop
+running = True
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    screen.fill((180, 0, 0)) # Red background
+    display_scores(screen, scores) # Display the scores
+    pygame.display.flip() # Update the screen
+# to Exit the game 
+pygame.quit()
+sys.exit()
