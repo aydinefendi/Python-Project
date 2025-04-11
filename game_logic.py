@@ -9,8 +9,7 @@ def resolve_round(player_card: Card, computer_card: Card,
           previous_computer_card: Card = None) -> tuple[dict, list[Card]]:
 
     # Show the cards played
-    print(f"Player played: {player_card}")
-    print(f"Computer played: {computer_card}")
+    played_info = f"Player played: {player_card} | Computer played: {computer_card}"
 
     # Comparing numbers if colours match
     if player_card.colour == computer_card.colour:
@@ -33,7 +32,7 @@ def resolve_round(player_card: Card, computer_card: Card,
     discard_pile.append(player_card)
     discard_pile.append(computer_card)
 
-    return scores, discard_pile, round_message
+    return scores, discard_pile, round_message, played_info
 
 
 # Refilling hands function
