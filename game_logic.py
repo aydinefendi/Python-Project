@@ -24,16 +24,16 @@ def resolve_round(player_card: Card, computer_card: Card,
         if winner != "tie":
             points = calculate_points(player_card, computer_card, previous_player_card, previous_computer_card, winner) 
             scores[winner] += points
-            print(f"{winner.capitalize()} wins the round and gets {points} points!")
+            round_message = f"{winner.capitalize()} wins the round and gets {points} points!"
         else:
-            print("It's a tie! No points awarded.")
+            round_message = "It's a tie! No points awarded."
     else:  # If colours don't match
-        print("Colours don't match! No points awarded.")
+        round_message = "Colours don't match! No points awarded."
 
     discard_pile.append(player_card)
     discard_pile.append(computer_card)
 
-    return scores, discard_pile
+    return scores, discard_pile, round_message
 
 
 # Refilling hands function
