@@ -81,13 +81,30 @@ class Card:
         else:
             return self.card_type.capitalize()
 
+#ID: 5671165
+def shuffle(array: list) -> list:
+    """Shuffles the cards inside the deck in place using the Fisher-Yates algorithm.
+    
+    Args:
+        array (list): The list of unshuffled deck of cards.
+        
+    Returns:
+        list: The shuffled deck of cards as a list.
+    """
+    for i in range(len(array) - 1, 0, -1):
+        j = random.randint(0, i)
+        # Swap the card at index i with a random card at index j
+        array[i], array[j] = array[j], array[i]
+    return array
+#ID: 5671165
+
 # Initialize the deck
 def initialize_deck():
     ''' Initializes the deck of cards '''
     deck = []
     colors = ["Red", "Blue", "Green", "Yellow"]
     
-    # Add regular cards (1-10 in each color)
+    # Add regular cards (1-10 in each color) in deck list
     for color in colors:
         for number in range(1, 11):
             deck.append(Card(color, number))
@@ -97,10 +114,9 @@ def initialize_deck():
     deck.append(Card("", 0, "watcher"))
     deck.append(Card("", 0, "colorstorm"))
     deck.append(Card("", 0, "ascendancy"))
-    
-    # Shuffle the deck
-    random.shuffle(deck)
-    
+
+    shuffle(deck)
+
     return deck
 
 # Deal cards
