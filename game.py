@@ -322,15 +322,15 @@ def resolve_round():
 
     """
     Handles a single round of the game:
-      Compares player and computer cards
-      Applies scoring and bonus logic
-      Updates the discard pile, game state, and tracks previously played cards
+      Compares player and computer cards.
+      Applies scoring and bonus logic.
+      Updates the discard pile, game state, and tracks previously played cards.
 
     Returns:
         tuple:
-             discard_pile (list[Card]): The updated discard pile
-             result_message (str): A message summarizing the round result
-             played_info (str): Detailed info about which cards were played
+             discard_pile (list[Card]): The updated discard pile.
+             result_message (str): A message summarizing the round result.
+             played_info (str): Detailed info about which cards were played.
     """
 
     global player_played_card, computer_played_card
