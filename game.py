@@ -23,7 +23,7 @@ PURPLE = (128, 0, 128)
 
 # Setting up the display
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("Card Game")
+pygame.display.set_caption("War of Colors")
 
 # Game variables
 player_hand = []
@@ -519,7 +519,7 @@ def main():
     ''' Main function to run the game '''
     global player_score, computer_score, game_state, player_played_card, computer_played_card, result_message
     global previous_player_card, previous_computer_card, played_card_message
-    
+
     # Initialize the game
     deal_cards()
     selected_card = None
