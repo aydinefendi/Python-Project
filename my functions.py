@@ -1,0 +1,70 @@
+#ID: 5670726
+
+class Card:
+    """ A class to represent a single card in the game.
+
+    Attributes:
+        colour (str): The colour of the card.
+        number (int): The number of the card.
+        special (bool): whether the card is special type (e.g., wild, watcher, etc.).
+        name (str): the name of the card if applicable.
+    """
+    def __init__(self, colour: str, number: int, special: bool = False, name: str = ""):
+        self.colour = colour
+        self.number = number
+        self.special = special
+        self.name = name #To identify special cards
+
+    def __str__(self):
+        # If its a special card it returns its name, otherwise show colour and number
+        return f"{self.colour} {self.number}" if not self.special else self.name
+
+def resolve_round(player_card: Card, computer_card: Card,
+          scores: dict, discard_pile: list[Card],
+          previous_player_card: Card = None,
+          previous_computer_card: Card = None) -> tuple[dict, list[Card]]:
+    """
+    Compares the player's and computer's cards and updates the scores and discard pile accordingly.
+
+    Parameters:
+        player_card (Card): The card chosen by the player.
+        computer_card (Card): The card chosen by the computer.
+        scores (dict): Current scores of both players.
+        discard_pile (list): the pile where the card played will be added.
+
+    Returns:
+        tuple: Updated scores and discard pile.
+    """
+    # Input validation
+    if not player_card or not computer_card:
+        return scores, discard_pile, "Invalid card(s) — round skipped."
+
+    if "player" not in scores or "computer" not in scores:
+        return scores, discard_pile, "Invalid score dictionary — keys missing."
+    
+    # Show the cards played
+    played_info = f"Player played: {player_card} | Computer played: {computer_card}"
+
+    # Comparing numbers if colours match
+    if player_card.colour == computer_card.colour:
+        if player_card.number > computer_card.number:
+            winner = "player"
+        elif player_card.number < computer_card.number:
+            winner = "computer"
+        else:
+            winner = "tie"
+
+        if winner != "tie":
+            points = calculate_points(player_card, computer_card, previous_player_card, previous_computer_card, winner) 
+            scores[winner] += points
+            round_message = f"{winner.capitalize()} wins the round and gets {points} points!"
+        else:
+            round_message = "It's a tie! No points awarded."
+    else:  # If colours don't match
+        round_message = "Colours don't match! No points awarded."
+
+    discard_pile.append(player_card)
+    discard_pile.append(computer_card)
+
+    return scores, discard_pile, round_message, played_info
+#ID: 5670726
