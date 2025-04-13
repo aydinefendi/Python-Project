@@ -40,12 +40,23 @@ SHOWING_RESULT = 2
 GAME_OVER = 3
 game_state = SELECTING_CARD
 
+#ID: 5670726
+score_font = pygame.font.SysFont(None, 36)
+message_font = pygame.font.SysFont(None, 36)
+played_card_font = pygame.font.SysFont(None, 30)
+message = ""
+played_card_message = ""
+#ID: 5670726
+
 # Played cards
 player_played_card = None
 computer_played_card = None
 
-# Result message
+#ID: 5670726
+previous_player_card = None
+previous_computer_card = None
 result_message = ""
+#ID: 5670726
 
 # Card class
 class Card:
@@ -266,52 +277,119 @@ def draw_winner_display():
     
     return pygame.Rect(button_x, button_y, button_width, button_height)
 
+#ID: 5670726
+# Calculates points
+def calculate_points(player_card: Card, computer_card: Card,
+                       previous_player_card: Card = None,
+                       previous_computer_card: Card = None,
+                       winner: str = "") -> int:
+
+    """
+    Calculates total points for the round including any applicable bonus.
+
+    Parameters:
+        player_card (Card): The card played by the player.
+        computer_card (Card): The card played by the computer.
+        previous_player_card (Card): Previous card played by the player.
+        previous_computer_card (Card): Previous card played by the computer.
+        winner (str): Either "player" or "computer".
+
+    Returns:
+        int: Total points for the round.
+    """
+
+    total_points = player_card.number + computer_card.number
+
+    # Check for player's bonus
+    if winner == "player" and previous_player_card:
+        if player_card.color == previous_player_card.color and player_card.number == previous_player_card.number:
+            total_points += 2
+
+    #check for computer's bonus
+    if winner == "computer" and previous_computer_card:
+        if computer_card.color == previous_computer_card.color and computer_card.number == previous_computer_card.number:
+            total_points += 2
+
+    return total_points
+#ID: 5670726
+
+#ID: 5670726
 # Evaluate the round
-def evaluate_round():
-    ''' Evaluates the round and updates scores '''
-    global player_score, computer_score, result_message, discard_pile, game_state
+def resolve_round():
+
+    """
+    Handles a single round of the game:
+      Compares player and computer cards.
+      Applies scoring and bonus logic.
+      Updates the discard pile, game state, and tracks previously played cards.
+
+    Returns:
+        tuple:
+             discard_pile (list[Card]): The updated discard pile.
+             result_message (str): A message summarizing the round result.
+             played_info (str): Detailed info about which cards were played.
+    """
+
+    global player_played_card, computer_played_card
+    global player_score, computer_score, discard_pile, draw_stack
+    global player_hand, computer_hand, game_state, result_message
+    global previous_player_card, previous_computer_card
     
     if not player_played_card or not computer_played_card:
-        return
+        return discard_pile, result_message, "No cards played."
     
-    # Handle special cards first
+    # Show the cards played
+    played_info = f"Player played: {player_played_card} | Computer played: {computer_played_card}"
+
     if player_played_card.card_type != "regular" or computer_played_card.card_type != "regular":
         # For now, just put them in discard pile
         discard_pile.extend([player_played_card, computer_played_card])
         result_message = "Special card played. No points awarded."
-        return
+        return discard_pile, result_message, played_info
     
-    # Check if cards are the same color
+    # Comparing numbers if colors match
     if player_played_card.color == computer_played_card.color:
-        # Same color - higher number wins
-        total_points = player_played_card.number + computer_played_card.number
-        
         if player_played_card.number > computer_played_card.number:
-            player_score += total_points
-            result_message = f"Player wins {total_points} points!"
-        elif computer_played_card.number > player_played_card.number:
-            computer_score += total_points
-            result_message = f"Computer wins {total_points} points!"
+            winner = "player"
+        elif player_played_card.number < computer_played_card.number:
+            winner = "computer"
         else:
-            # Tie means no points (shouldn't happen with unique cards)
-            result_message = "Tie! No points awarded."
+            winner = "tie"
+
+        if winner != "tie":
+            points = calculate_points(player_played_card, computer_played_card, 
+                                      previous_player_card, previous_computer_card, winner=winner)
+            if winner == "player":
+                player_score += points
+            else:
+                computer_score += points
+            round_message = f"{winner.capitalize()} wins the round and gets {points} points!"
+        else:
+            round_message = "It's a tie! No points awarded."
     else:
-        # Different colors means no points
-        result_message = "Different colors! No points awarded."
-    
-    # Move cards to discard pile
-    discard_pile.extend([player_played_card, computer_played_card])
-    
-    # Draw new cards if there are cards in the draw stack
-    if len(draw_stack) > 0 and len(player_hand) < 5:
+        round_message = "Colours don't match! No points awarded."
+
+    result_message = round_message
+
+    # Move played cards to discard pile
+    discard_pile.append(player_played_card)
+    discard_pile.append(computer_played_card)
+
+    # Draw new cards if needed
+    if draw_stack and len(player_hand) < 5:
         player_hand.append(draw_stack.pop())
-    
-    if len(draw_stack) > 0 and len(computer_hand) < 5:
+    if draw_stack and len(computer_hand) < 5:
         computer_hand.append(draw_stack.pop())
-    
-    # Check if the game is over
+
+    # Check if game is over
     if check_game_over():
         game_state = GAME_OVER
+
+    previous_player_card = player_played_card
+    previous_computer_card = computer_played_card
+
+    return discard_pile, result_message, played_info
+#ID: 5670726
 
 # Play button
 def draw_play_button():
@@ -360,6 +438,20 @@ def draw_wait_message():
         text = font.render("Computer is thinking...", True, WHITE)
         screen.blit(text, (SCREEN_WIDTH // 2 - text.get_width() // 2, SCREEN_HEIGHT // 2 + 150))
 
+#ID: 5670726
+# Draw the score and round messages
+def draw_scores_and_messages():
+    p_score = score_font.render(f"Player: {player_score}", True, WHITE)
+    c_score = score_font.render(f"Computer: {computer_score}", True, WHITE)
+    msg = message_font.render(message, True, WHITE)
+    played = played_card_font.render(played_card_message, True, WHITE)
+
+    screen.blit(p_score, (50, 20))
+    screen.blit(c_score, (SCREEN_WIDTH - 250, 20))
+    screen.blit(msg, (SCREEN_WIDTH // 2 - msg.get_width() // 2, 70))
+    screen.blit(played, (SCREEN_WIDTH // 2 - played.get_width() // 2, 10))
+#ID: 5670726
+
 # Draw the game board
 def draw_game_board():
     ''' Draws the game board '''
@@ -379,6 +471,9 @@ def draw_game_board():
         
         # Draw wait message if needed
         draw_wait_message()
+
+        # Draw scores and round messages
+        draw_scores_and_messages()
         
         # Draw game state specific instructions
         font = pygame.font.SysFont(None, 36)
@@ -392,11 +487,6 @@ def draw_game_board():
             instruction_text = font.render("", True, WHITE)
         
         screen.blit(instruction_text, (SCREEN_WIDTH // 2 - instruction_text.get_width() // 2, 50))
-        
-        # Draw scores
-        font = pygame.font.SysFont(None, 36)
-        score_text = font.render(f"Player: {player_score}  Computer: {computer_score}", True, WHITE)
-        screen.blit(score_text, (SCREEN_WIDTH // 2 - score_text.get_width() // 2, 10))
         
         play_again_button = None
     else:
@@ -428,6 +518,7 @@ def handle_card_selection(pos):
 def main():
     ''' Main function to run the game '''
     global player_score, computer_score, game_state, player_played_card, computer_played_card, result_message
+    global previous_player_card, previous_computer_card, played_card_message
     
     # Initialize the game
     deal_cards()
@@ -482,7 +573,8 @@ def main():
         # Handle computer's turn
         if game_state == WAITING_FOR_COMPUTER and current_time >= computer_play_time:
             computer_played_card = computer_play_card()
-            evaluate_round()  
+            discard_pile, result_message, played_info = resolve_round()  
+            played_card_message = played_info  
             if game_state != GAME_OVER:  
                 game_state = SHOWING_RESULT
         
