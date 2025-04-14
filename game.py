@@ -348,12 +348,12 @@ def calculate_points(player_card: Card, computer_card: Card,
 
     # Check for player's bonus
     if winner == "player" and previous_player_card:
-        if player_card.color == previous_player_card.color and player_card.number == previous_player_card.number:
+        if player_card.number == previous_player_card.number:
             total_points += 2
 
     #check for computer's bonus
     if winner == "computer" and previous_computer_card:
-        if computer_card.color == previous_computer_card.color and computer_card.number == previous_computer_card.number:
+        if computer_card.number == previous_computer_card.number:
             total_points += 2
 
     return total_points
