@@ -167,7 +167,7 @@ def discard_card(card: Card) -> None:
 # Deal cards
 def deal_cards():
     ''' Deals the cards to the player and computer '''
-    global player_hand, computer_hand, draw_stack, player_score, computer_score
+    global player_hand, computer_hand, draw_stack, player_score, computer_score, discard_pile
     
     # Reset scores when starting a new game
     player_score = 0
@@ -176,6 +176,7 @@ def deal_cards():
     draw_stack = initialize_deck()
     player_hand = [draw_stack.pop() for _ in range(5)]
     computer_hand = [draw_stack.pop() for _ in range(5)]
+    discard_pile = []
 
 # Draw player's hand
 def draw_player_hand():
@@ -482,7 +483,7 @@ def draw_discard_pile() -> None:
     Returns:
         None
     """
-    base_x = SCREEN_WIDTH - CARD_WIDTH - 97
+    base_x = SCREEN_WIDTH - CARD_WIDTH - 100
     base_y = (SCREEN_HEIGHT // 2) - (CARD_HEIGHT // 2)
     # Adjustment to show the pile effect
     adjustment = 2.3
