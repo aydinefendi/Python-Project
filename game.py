@@ -101,6 +101,7 @@ class Card:
         if face_up:
             screen.blit(self.image, (x, y))
         else:
+            pygame.draw.rect(screen, BLACK, (x - 2, y - 2, CARD_WIDTH + 4, CARD_HEIGHT + 4), border_radius=12)
             screen.blit(self.back_image, (x, y))
     
     def __str__(self):
@@ -442,6 +443,7 @@ def play_selected_card():
         if card.selected:
             player_played_card = player_hand.pop(i)
             game_state = WAITING_FOR_COMPUTER
+            card.selected = False
             return True
     
     return False
@@ -468,6 +470,37 @@ def draw_scores_and_messages():
     screen.blit(played, (SCREEN_WIDTH // 2 - played.get_width() // 2, 10))
 #ID: 5670726
 
+#ID: 5671165
+# Draw discard pile
+def draw_discard_pile() -> None:
+    """Draws the discard pile on the screen with small positional adjustment between each card.
+    
+    This function adds the label "Discard pile" and draws each card in the discard pile
+    with small positional adjustment to simulate the pile shape.
+    All cards are drawn face down.
+    
+    Returns:
+        None
+    """
+    base_x = SCREEN_WIDTH - CARD_WIDTH - 97
+    base_y = (SCREEN_HEIGHT // 2) - (CARD_HEIGHT // 2)
+    # Adjustment to show the pile effect
+    adjustment = 2.3
+
+    #Draw the 'Discard pile' text
+    font = pygame.font.SysFont(None, 36)
+    draw_stack_text = font.render("Discard pile", True, WHITE)
+    text_x = base_x + 10
+    text_y = base_y - CARD_HEIGHT // 2 - 40
+    screen.blit(draw_stack_text, (text_x, text_y))
+
+    #Draw each card in the discard pile faced down
+    for i, card in enumerate(discard_pile):
+        x = base_x + (i * adjustment)
+        y = base_y - (i * adjustment)
+        card.draw(x, y, face_up=False)
+#ID: 5671165
+
 # Draw the game board
 def draw_game_board():
     ''' Draws the game board '''
@@ -481,6 +514,9 @@ def draw_game_board():
         
         # Draw played cards
         draw_played_cards()
+
+        #Draw discard pile
+        draw_discard_pile()
         
         # Draw button
         play_button = draw_play_button()
