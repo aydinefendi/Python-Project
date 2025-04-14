@@ -149,6 +149,7 @@ def initialize_deck():
     return deck
 
 #ID: 5671165
+
 #Adds a card to the discard pile
 def discard_card(card: Card) -> None:
     """Adds a Card instance to the discard pile.
@@ -162,6 +163,34 @@ def discard_card(card: Card) -> None:
     global discard_pile
 
     discard_pile.append(card)
+#ID: 5671165
+
+#ID: 5671165
+#Give the player one card
+def player_draw_card() -> None:
+    """Draws one card from the draw stack and assigns it to the player.
+
+    This function takes the top card from the draw stack and appends it to
+    the player's hand.
+
+    Returns:
+        None
+    """
+    player_hand.append(draw_stack.pop())
+#ID: 5671165
+
+#ID: 5671165
+#Give the computer one card
+def computer_draw_card() -> None:
+    """Draws one card from the draw stack and assigns it to the computer.
+
+    This function takes the top card from the draw stack and appends it to
+    the computer's hand.
+
+    Returns:
+        None
+    """
+    computer_hand.append(draw_stack.pop())
 #ID: 5671165
 
 # Deal cards
@@ -395,9 +424,9 @@ def resolve_round():
 
     # Draw new cards if needed
     if draw_stack and len(player_hand) < 5:
-        player_hand.append(draw_stack.pop())
+        player_draw_card()
     if draw_stack and len(computer_hand) < 5:
-        computer_hand.append(draw_stack.pop())
+        computer_draw_card()
 
     # Check if game is over
     if check_game_over():
