@@ -147,10 +147,26 @@ def initialize_deck():
 
     return deck
 
+#ID: 5671165
+#Adds a card to the discard pile
+def discard_card(card: Card) -> None:
+    """Adds a Card instance to the discard pile.
+
+    Args:
+        card (Card): The card instance to be added to the discard pile.
+
+    Returns:
+        None
+    """
+    global discard_pile
+
+    discard_pile.append(card)
+#ID: 5671165
+
 # Deal cards
 def deal_cards():
     ''' Deals the cards to the player and computer '''
-    global player_hand, computer_hand, draw_stack, discard_pile, player_score, computer_score
+    global player_hand, computer_hand, draw_stack, player_score, computer_score
     
     # Reset scores when starting a new game
     player_score = 0
@@ -159,7 +175,6 @@ def deal_cards():
     draw_stack = initialize_deck()
     player_hand = [draw_stack.pop() for _ in range(5)]
     computer_hand = [draw_stack.pop() for _ in range(5)]
-    discard_pile = []
 
 # Draw player's hand
 def draw_player_hand():
@@ -343,7 +358,8 @@ def resolve_round():
 
     if player_played_card.card_type != "regular" or computer_played_card.card_type != "regular":
         # For now, just put them in discard pile
-        discard_pile.extend([player_played_card, computer_played_card])
+        discard_card(player_played_card)
+        discard_card(computer_played_card)
         result_message = "Special card played. No points awarded."
         return discard_pile, result_message, played_info
     
@@ -372,8 +388,8 @@ def resolve_round():
     result_message = round_message
 
     # Move played cards to discard pile
-    discard_pile.append(player_played_card)
-    discard_pile.append(computer_played_card)
+    discard_card(player_played_card)
+    discard_card(computer_played_card)
 
     # Draw new cards if needed
     if draw_stack and len(player_hand) < 5:
