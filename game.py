@@ -500,6 +500,36 @@ def draw_scores_and_messages():
     screen.blit(played, (SCREEN_WIDTH // 2 - played.get_width() // 2, 10))
 #ID: 5670726
 
+# Draw the draw_stack
+def draw_draw_stack() -> None:
+    """Draws the draw stack on the screen with small positional adjustment between each card.
+    
+    This function adds the label "Draw stack" and draws each card in the draw stack
+    with small positional adjustment to simulate the stack shape.
+    All cards are drawn face down.
+    
+    Returns:
+        None
+    """
+    base_x = 15
+    base_y = (SCREEN_HEIGHT // 2) - (CARD_HEIGHT // 2)
+    # Adjustment to show the stack effect
+    adjustment = 2.3
+    
+    #Draw the 'Draw stack' text
+    font = pygame.font.SysFont(None, 36)
+    draw_stack_text = font.render("Draw stack", True, WHITE)
+    text_x = base_x + 10
+    text_y = base_y - CARD_HEIGHT // 2 - 40
+    screen.blit(draw_stack_text, (text_x, text_y))
+
+    #Draw each card in the draw stack faced down
+    for i, card in enumerate(draw_stack):
+        x = base_x + (i * adjustment)
+        y = base_y - (i * adjustment)
+        card.draw(x, y, face_up=False)
+#ID: 5671165
+
 #ID: 5671165
 # Draw discard pile
 def draw_discard_pile() -> None:
@@ -547,6 +577,9 @@ def draw_game_board():
 
         #Draw discard pile
         draw_discard_pile()
+
+        #Draw draw_stack
+        draw_draw_stack()
         
         # Draw button
         play_button = draw_play_button()
