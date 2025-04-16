@@ -222,6 +222,7 @@ def draw_player_hand():
         y = SCREEN_HEIGHT - CARD_HEIGHT - 50
         card.draw(x, y, face_up=True)
 
+#ID: 5672969
 # Draw played cards
 def draw_played_cards():
     ''' Draws the played cards in the center of the screen '''
@@ -252,7 +253,9 @@ def draw_played_cards():
         font = pygame.font.SysFont(None, 36)
         text = font.render(result_message, True, WHITE)
         screen.blit(text, (SCREEN_WIDTH // 2 - text.get_width() // 2, SCREEN_HEIGHT // 2 + 100))
+#ID: 5672969
 
+#ID: 5672969
 # Computer plays a card
 def computer_play_card():
     ''' Computer selects a card to play '''
@@ -260,7 +263,9 @@ def computer_play_card():
     if computer_hand:
         return computer_hand.pop(random.randint(0, len(computer_hand) - 1))
     return None
+#ID: 5672969
 
+#ID: 5672969
 # Check if the game is over
 def check_game_over():
     ''' Checks if the game is over '''
@@ -275,7 +280,9 @@ def check_game_over():
         return True
         
     return False
+#ID: 5672969
 
+#ID: 5672969
 # Draw the winner display
 def draw_winner_display():
     ''' Display the winner of the game '''
@@ -322,6 +329,7 @@ def draw_winner_display():
                            button_y + button_height // 2 - button_text.get_height() // 2))
     
     return pygame.Rect(button_x, button_y, button_width, button_height)
+#ID: 5672969
 
 #ID: 5670726
 # Calculates points
@@ -438,6 +446,7 @@ def resolve_round():
     return discard_pile, result_message, played_info
 #ID: 5670726
 
+#ID: 5672969
 # Play button
 def draw_play_button():
     ''' Draws the play button if a card is selected '''
@@ -463,7 +472,9 @@ def draw_play_button():
         return pygame.Rect(button_x, button_y, button_width, button_height)
     
     return None
+#ID: 5672969
 
+#ID: 5672969
 # Process selected card
 def play_selected_card():
     ''' Plays the selected card '''
@@ -477,7 +488,9 @@ def play_selected_card():
             return True
     
     return False
+#ID: 5672969
 
+#ID: 5672969
 # Draw wait message
 def draw_wait_message():
     ''' Draws a message indicating waiting for the computer '''
@@ -485,7 +498,8 @@ def draw_wait_message():
         font = pygame.font.SysFont(None, 36)
         text = font.render("Computer is thinking...", True, WHITE)
         screen.blit(text, (SCREEN_WIDTH // 2 - text.get_width() // 2, SCREEN_HEIGHT // 2 + 150))
-
+#ID: 5672969
+ 
 #ID: 5670726
 # Draw the score and round messages
 def draw_scores_and_messages():
@@ -561,6 +575,7 @@ def draw_discard_pile() -> None:
         card.draw(x, y, face_up=False)
 #ID: 5671165
 
+#ID: 5672969
 # Draw the game board
 def draw_game_board():
     ''' Draws the game board '''
@@ -615,7 +630,9 @@ def draw_game_board():
         return None, play_again_button
     else:
         return play_button, None
+#ID: 5672969
 
+#ID: 5672969
 # Check for card selection
 def handle_card_selection(pos):
     ''' Handles the card selection '''
@@ -628,7 +645,9 @@ def handle_card_selection(pos):
             card.selected = True
             return card
     return None
+#ID: 5672969
 
+#ID: 5672969
 # Main function
 def main():
     ''' Main function to run the game '''
@@ -698,6 +717,6 @@ def main():
     
     pygame.quit()
     sys.exit()
-
+#ID: 5672969
 if __name__ == "__main__":
     main()
