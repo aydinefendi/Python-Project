@@ -84,12 +84,20 @@ class Card:
         self.back_image = pygame.image.load(os.path.join("CARDS", "BACK.png"))
         self.back_image = pygame.transform.scale(self.back_image, (CARD_WIDTH, CARD_HEIGHT))
         
-        
         self.rect = self.image.get_rect()
-    
+    #ID: 5672969
     # draw() method to draw the card
     def draw(self, x, y, face_up=True):
-        ''' Draws the card at the specified position '''
+        """Draws the card at the specified position.
+        
+        Args:
+            x: The x-coordinate where the card should be drawn.
+            y: The y-coordinate where the card should be drawn.
+            face_up: Whether the card should be drawn face up or face down.
+            
+        Returns:
+            None
+        """
         self.rect.x = x
         self.rect.y = y
         
@@ -109,6 +117,7 @@ class Card:
             return f"{self.color} {self.number}"
         else:
             return self.card_type.capitalize()
+    #ID: 5672969
 
 #ID: 5671165
 def shuffle(array: list) -> list:
@@ -193,9 +202,17 @@ def computer_draw_card() -> None:
     computer_hand.append(draw_stack.pop())
 #ID: 5671165
 
+#ID: 5672969
 # Deal cards
 def deal_cards():
-    ''' Deals the cards to the player and computer '''
+    """Deals the cards to the player and computer.
+    
+    This function initializes the game by dealing cards to both the player
+    and computer, resetting scores, and preparing the draw stack and discard pile.
+    
+    Returns:
+        None
+    """
     global player_hand, computer_hand, draw_stack, player_score, computer_score, discard_pile
     
     # Reset scores when starting a new game
@@ -221,6 +238,7 @@ def draw_player_hand():
         x = start_x + i * (CARD_WIDTH + CARD_SPACING)
         y = SCREEN_HEIGHT - CARD_HEIGHT - 50
         card.draw(x, y, face_up=True)
+#ID: 5672969
 
 #ID: 5672969
 # Draw played cards
@@ -258,7 +276,13 @@ def draw_played_cards():
 #ID: 5672969
 # Computer plays a card
 def computer_play_card():
-    ''' Computer selects a card to play '''
+    """Computer selects a card to play.
+    
+    This function randomly selects a card from the computer's hand to play.
+    
+    Returns:
+        Card or None: The selected card if the computer has cards, None otherwise.
+    """
     #computer just plays a random card
     if computer_hand:
         return computer_hand.pop(random.randint(0, len(computer_hand) - 1))
@@ -268,8 +292,16 @@ def computer_play_card():
 #ID: 5672969
 # Check if the game is over
 def check_game_over():
-    ''' Checks if the game is over '''
+    """Checks if the game is over.
     
+    The game is considered over if:
+    - The draw stack is empty and either player has no cards
+    - Both players have no cards
+    - Either player has less than 4 cards
+    
+    Returns:
+        bool: True if the game is over, False otherwise.
+    """
     if len(draw_stack) == 0 and (len(player_hand) == 0 or len(computer_hand) == 0):
         return True
     
@@ -285,7 +317,14 @@ def check_game_over():
 #ID: 5672969
 # Draw the winner display
 def draw_winner_display():
-    ''' Display the winner of the game '''
+    """Displays the winner of the game.
+    
+    This function creates a game over screen showing the final scores,
+    the winner, and a play again button.
+    
+    Returns:
+        The rectangle representing the play again button.
+    """
     # Create a semi-transparent overlay
     overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
     overlay.fill((0, 0, 0, 180))
@@ -449,8 +488,15 @@ def resolve_round():
 #ID: 5672969
 # Play button
 def draw_play_button():
-    ''' Draws the play button if a card is selected '''
+    """Draws the play button if a card is selected.
     
+    This function draws a play button on the screen when a card is selected
+    and the game is in the SELECTING_CARD state.
+    
+    Returns:
+        pygame.Rect or None: The rectangle representing the play button if drawn,
+                            None if no button is drawn.
+    """
     # Check if any card is selected
     any_selected = any(card.selected for card in player_hand)
     
@@ -477,7 +523,14 @@ def draw_play_button():
 #ID: 5672969
 # Process selected card
 def play_selected_card():
-    ''' Plays the selected card '''
+    """Plays the selected card.
+    
+    This function removes the selected card from the player's hand and
+    sets it as the player's played card for the current round.
+    
+    Returns:
+        bool: True if a card was played, False otherwise.
+    """
     global player_hand, player_played_card, game_state
     
     for i, card in enumerate(player_hand):
@@ -493,7 +546,14 @@ def play_selected_card():
 #ID: 5672969
 # Draw wait message
 def draw_wait_message():
-    ''' Draws a message indicating waiting for the computer '''
+    """Draws a message indicating waiting for the computer.
+    
+    This function displays a "Computer is thinking..." message when
+    the game is in the WAITING_FOR_COMPUTER state.
+    
+    Returns:
+        None
+    """
     if game_state == WAITING_FOR_COMPUTER:
         font = pygame.font.SysFont(None, 36)
         text = font.render("Computer is thinking...", True, WHITE)
@@ -578,7 +638,16 @@ def draw_discard_pile() -> None:
 #ID: 5672969
 # Draw the game board
 def draw_game_board():
-    ''' Draws the game board '''
+    """Draws the game board.
+    
+    This function draws all the game elements including the player's hand,
+    played cards, discard pile, draw stack, play button, wait message,
+    and scores based on the current game state.
+    
+    Returns:
+        tuple: A tuple containing (play_button_rect, play_again_button_rect)
+               where each element is a pygame.Rect or None.
+    """
     #Background
     screen.fill(GREEN)
     
@@ -635,7 +704,18 @@ def draw_game_board():
 #ID: 5672969
 # Check for card selection
 def handle_card_selection(pos):
-    ''' Handles the card selection '''
+    """Handles the card selection.
+    
+    This function processes mouse clicks to select a card from the player's hand.
+    When a card is selected, all other cards are deselected.
+    
+    Args:
+        pos (tuple): The (x, y) coordinates of the mouse click.
+        
+    Returns:
+        Card or None: The selected card if a valid selection was made,
+                     None if no card was selected.
+    """
     for card in player_hand:
         if card.rect.collidepoint(pos):
             # Deselect all cards
@@ -650,7 +730,18 @@ def handle_card_selection(pos):
 #ID: 5672969
 # Main function
 def main():
-    ''' Main function to run the game '''
+    """Main function to run the game.
+    
+    This function initializes and runs the main game loop, handling:
+    - Card selection and playing
+    - Computer turns
+    - Game state transitions
+    - User input
+    - Game over conditions
+    
+    Returns:
+        None
+    """
     global player_score, computer_score, game_state, player_played_card, computer_played_card, result_message
     global previous_player_card, previous_computer_card, played_card_message
 
