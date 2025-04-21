@@ -294,21 +294,14 @@ def computer_play_card():
 def check_game_over():
     """Checks if the game is over.
     
-    The game is considered over if:
-    - The draw stack is empty and either player has no cards
-    - Both players have no cards
-    - Either player has less than 4 cards
+    The game is considered over only when:
+    - The draw stack is empty AND
+    - Both players have no cards left to play
     
     Returns:
         bool: True if the game is over, False otherwise.
     """
-    if len(draw_stack) == 0 and (len(player_hand) == 0 or len(computer_hand) == 0):
-        return True
-    
-    if len(player_hand) == 0 and len(computer_hand) == 0:
-        return True
-        
-    if len(player_hand) < 4 or len(computer_hand) < 4:
+    if len(draw_stack) == 0 and len(player_hand) == 0 and len(computer_hand) == 0:
         return True
         
     return False
@@ -409,7 +402,6 @@ def calculate_points(player_card: Card, computer_card: Card,
 #ID: 5670726
 # Evaluate the round
 def resolve_round():
-
     """
     Handles a single round of the game:
       Compares player and computer cards.
@@ -422,7 +414,6 @@ def resolve_round():
              result_message (str): A message summarizing the round result.
              played_info (str): Detailed info about which cards were played.
     """
-
     global player_played_card, computer_played_card
     global player_score, computer_score, discard_pile, draw_stack
     global player_hand, computer_hand, game_state, result_message
@@ -475,8 +466,8 @@ def resolve_round():
     if draw_stack and len(computer_hand) < 5:
         computer_draw_card()
 
-    # Check if game is over
-    if check_game_over():
+    
+    if len(draw_stack) == 0 and len(player_hand) == 0 and len(computer_hand) == 0:
         game_state = GAME_OVER
 
     previous_player_card = player_played_card
