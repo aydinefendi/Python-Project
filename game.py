@@ -152,7 +152,9 @@ def initialize_deck():
     deck.append(Card("", 0, "watcher"))
     deck.append(Card("", 0, "colorstorm"))
     deck.append(Card("", 0, "ascendancy"))
-
+    deck.append(Card("", 0, "twopoints"))
+    deck.append(Card("", 0, "twopoints"))
+    
     shuffle(deck)
 
     return deck
@@ -424,12 +426,29 @@ def resolve_round():
     
     # Show the cards played
     played_info = f"Player played: {player_played_card} | Computer played: {computer_played_card}"
-
-    if player_played_card.card_type != "regular" or computer_played_card.card_type != "regular":
-        # For now, just put them in discard pile
+    
+    # Handling special cards
+    if player_played_card.card_type == "twopoints" and computer_played_card.card_type == "twopoints":
+        # If both players play two points card none of them gets the points
         discard_card(player_played_card)
         discard_card(computer_played_card)
-        result_message = "Special card played. No points awarded."
+        result_message =  "Both players used two points card! No points awarded"
+        return discard_pile, result_message, played_info
+
+    elif player_played_card.card_type == "twopoints":
+        # If player uses two poins cards, they get 2 points 
+        player_score += 2
+        discard_card(player_played_card)
+        discard_card(computer_played_card)
+        result_message =  "Player used two points card and gets 2 points"
+        return discard_pile, result_message, played_info
+
+    elif computer_played_card.card_type == "twopoints":
+        # If copmuter uses two poins cards, they get 2 points 
+        computer_score += 2
+        discard_card(player_played_card)
+        discard_card(computer_played_card)
+        result_message =  "computer used two points card and gets 2 points"
         return discard_pile, result_message, played_info
     
     # Comparing numbers if colors match
