@@ -64,7 +64,7 @@ class Card:
         ''' Initializes the card with the given color, number, and card type '''
         self.color = color
         self.number = number
-        self.card_type = card_type  #regular, wild, watcher, colorstorm, ascendancy
+        self.card_type = card_type  #regular, wild, watcher, colorstorm, ascendancy, add two points
         self.selected = False
         
         # Load the image
@@ -76,6 +76,10 @@ class Card:
             self.image = pygame.image.load(os.path.join("CARDS", "COLORSTORM.png"))
         elif card_type == "ascendancy":
             self.image = pygame.image.load(os.path.join("CARDS", "ASCENDANCY.png"))
+        elif card_type == "twopoints":
+            self.image = pygame.image.load(os.path.join("CARDS", "TWOPOINTS.png"))
+        elif card_type == "twopoints2":
+            self.image = pygame.image.load(os.path.join("CARDS", "TWOPOINTS2.png"))
         else:
             self.image = pygame.image.load(os.path.join("CARDS", f"{color[0]}{number}.png"))
         
@@ -432,6 +436,12 @@ def resolve_round():
         # If both players play two points card none of them gets the points
         discard_card(player_played_card)
         discard_card(computer_played_card)
+
+        if draw_stack and len(player_hand) < 5:
+            player_draw_card()
+        if draw_stack and len(computer_hand) < 5:
+            computer_draw_card()
+
         result_message =  "Both players used two points card! No points awarded"
         return discard_pile, result_message, played_info
 
@@ -440,6 +450,12 @@ def resolve_round():
         player_score += 2
         discard_card(player_played_card)
         discard_card(computer_played_card)
+
+        if draw_stack and len(player_hand) < 5:
+            player_draw_card()
+        if draw_stack and len(computer_hand) < 5:
+            computer_draw_card()
+
         result_message =  "Player used two points card and gets 2 points"
         return discard_pile, result_message, played_info
 
@@ -448,6 +464,12 @@ def resolve_round():
         computer_score += 2
         discard_card(player_played_card)
         discard_card(computer_played_card)
+
+        if draw_stack and len(player_hand) < 5:
+            player_draw_card()
+        if draw_stack and len(computer_hand) < 5:
+            computer_draw_card()
+
         result_message =  "computer used two points card and gets 2 points"
         return discard_pile, result_message, played_info
     
@@ -479,7 +501,7 @@ def resolve_round():
     discard_card(player_played_card)
     discard_card(computer_played_card)
 
-    # Draw new cards if needed
+    # Draw new cards 
     if draw_stack and len(player_hand) < 5:
         player_draw_card()
     if draw_stack and len(computer_hand) < 5:
@@ -567,7 +589,7 @@ def draw_wait_message():
     if game_state == WAITING_FOR_COMPUTER:
         font = pygame.font.SysFont(None, 36)
         text = font.render("Computer is thinking...", True, WHITE)
-        screen.blit(text, (SCREEN_WIDTH // 2 - text.get_width() // 2, SCREEN_HEIGHT // 2 + 150))
+        screen.blit(text, (SCREEN_WIDTH // 2 - text.get_width() // 2, SCREEN_HEIGHT // 2 + 100))
 #ID: 5672969
  
 #ID: 5670726
