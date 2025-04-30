@@ -3,6 +3,7 @@ import os
 import random
 import sys
 import time
+from collections import defaultdict
 
 pygame.init()
 
@@ -430,10 +431,47 @@ def resolve_round():
     
     # Show the cards played
     played_info = f"Player played: {player_played_card} | Computer played: {computer_played_card}"
-    
-    # Handling special cards
+
+    # Handling colorstorm special card
+    if player_played_card.card_type == "colorstorm" or computer_played_card.card_type == "colorstorm":
+        discard_card(player_played_card)
+        discard_card(computer_played_card)
+
+        if len(draw_stack) < 3:
+            result_message = "Colorstorm played! There is no enough cards in the draw stack to reorder"
+            return discard_pile, result_message, played_info
+            
+        # Group cards by color
+        grouped = defaultdict(list)
+        for card in draw_stack:
+            grouped[card.color].append(card)
+
+        # Sort each color group numbers in ascending order
+        for colour_group in grouped.values():
+            colour_group.sort(key=lambda c: c.number)
+
+        # shuffle color groups randomly
+        color_order = list(grouped.keys())
+        shuffle(color_order)
+
+        draw_stack = []
+        for color in color_order:
+            draw_stack.extend(grouped[color])
+
+        if draw_stack and len(player_hand) < 5:
+            player_draw_card()
+        if draw_stack and len(computer_hand) < 5:
+            computer_draw_card()
+
+        result_message = "Colorstorm played! Draw stack reordered by color. No points awarded this round"
+        return discard_pile, result_message, played_info
+
+    # Handling Two points special card
     if player_played_card.card_type == "twopoints" and computer_played_card.card_type == "twopoints":
-        # If both players play two points card none of them gets the points
+        # If both players play two points card both of them gets 2 points
+        player_score += 2
+        computer_score += 2
+
         discard_card(player_played_card)
         discard_card(computer_played_card)
 
@@ -442,7 +480,7 @@ def resolve_round():
         if draw_stack and len(computer_hand) < 5:
             computer_draw_card()
 
-        result_message =  "Both players used two points card! No points awarded"
+        result_message =  "Both players used two points card! Each gets 2 points."
         return discard_pile, result_message, played_info
 
     elif player_played_card.card_type == "twopoints":
@@ -456,7 +494,7 @@ def resolve_round():
         if draw_stack and len(computer_hand) < 5:
             computer_draw_card()
 
-        result_message =  "Player used two points card and gets 2 points"
+        result_message =  "Player used two points card and gets 2 points."
         return discard_pile, result_message, played_info
 
     elif computer_played_card.card_type == "twopoints":
@@ -470,7 +508,7 @@ def resolve_round():
         if draw_stack and len(computer_hand) < 5:
             computer_draw_card()
 
-        result_message =  "computer used two points card and gets 2 points"
+        result_message =  "computer used two points card and gets 2 points."
         return discard_pile, result_message, played_info
     
     # Comparing numbers if colors match
