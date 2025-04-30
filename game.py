@@ -432,85 +432,64 @@ def resolve_round():
     # Show the cards played
     played_info = f"Player played: {player_played_card} | Computer played: {computer_played_card}"
 
-    # Handling colorstorm special card
-    if player_played_card.card_type == "colorstorm" or computer_played_card.card_type == "colorstorm":
+    # Handling colorstorm card and/or two points card combinations or with regular cards
+    colorstorm_played = player_played_card.card_type == "colorstorm" or computer_played_card.card_type == "colorstorm"
+    twopoints_player = player_played_card.card_type == "twopoints"
+    twopoints_computer = computer_played_card.card_type == "twopoints"
+
+    if colorstorm_played or twopoints_player or twopoints_computer:
         discard_card(player_played_card)
         discard_card(computer_played_card)
 
-        if len(draw_stack) < 3:
+        # Applying two points card
+        if twopoints_player:
+            player_score += 2
+        if twopoints_computer:
+            computer_score += 2
+
+        # Handling colorstorm
+        if colorstorm_played and len(draw_stack) >= 3:
+            # Group cards by color
+            grouped = defaultdict(list)
+            for card in draw_stack:
+                grouped[card.color].append(card) 
+
+            # Sort each color group numbers in ascending order
+            for colour_group in grouped.values():
+                colour_group.sort(key=lambda c: c.number)
+
+            # shuffle color groups randomly
+            color_order = list(grouped.keys())
+            shuffle(color_order)
+
+            # Rebuild the draw stack
+            draw_stack = []
+            for color in color_order:
+                draw_stack.extend(grouped[color])
+
+        if draw_stack and len(player_hand) < 5:
+            player_draw_card()
+        if draw_stack and len(computer_hand) < 5:
+            computer_draw_card()
+
+        # Result messages
+        if twopoints_player and twopoints_computer:
+            result_message =  "Both players used Two points card! Each gets 2 points."
+        elif twopoints_player and colorstorm_played:
+            result_message = "Player used Two points card and Colorstorm played! draw stack is reordered"
+        elif twopoints_computer and colorstorm_played:
+            result_message = "Computer used Two points card and Colorstorm played! draw stack is reordered"
+        elif twopoints_player:
+            result_message = "Player used two points card and gets 2 points."
+        elif twopoints_computer:
+            result_message = "computer used two points card and gets 2 points."
+        elif colorstorm_played and len(draw_stack) < 3:
             result_message = "Colorstorm played! There is no enough cards in the draw stack to reorder"
-            return discard_pile, result_message, played_info
-            
-        # Group cards by color
-        grouped = defaultdict(list)
-        for card in draw_stack:
-            grouped[card.color].append(card)
+        elif colorstorm_played:
+            result_message = "Colorstorm played! Draw stack reordered by color. No points awarded this round"
 
-        # Sort each color group numbers in ascending order
-        for colour_group in grouped.values():
-            colour_group.sort(key=lambda c: c.number)
-
-        # shuffle color groups randomly
-        color_order = list(grouped.keys())
-        shuffle(color_order)
-
-        draw_stack = []
-        for color in color_order:
-            draw_stack.extend(grouped[color])
-
-        if draw_stack and len(player_hand) < 5:
-            player_draw_card()
-        if draw_stack and len(computer_hand) < 5:
-            computer_draw_card()
-
-        result_message = "Colorstorm played! Draw stack reordered by color. No points awarded this round"
         return discard_pile, result_message, played_info
 
-    # Handling Two points special card
-    if player_played_card.card_type == "twopoints" and computer_played_card.card_type == "twopoints":
-        # If both players play two points card both of them gets 2 points
-        player_score += 2
-        computer_score += 2
-
-        discard_card(player_played_card)
-        discard_card(computer_played_card)
-
-        if draw_stack and len(player_hand) < 5:
-            player_draw_card()
-        if draw_stack and len(computer_hand) < 5:
-            computer_draw_card()
-
-        result_message =  "Both players used two points card! Each gets 2 points."
-        return discard_pile, result_message, played_info
-
-    elif player_played_card.card_type == "twopoints":
-        # If player uses two poins cards, they get 2 points 
-        player_score += 2
-        discard_card(player_played_card)
-        discard_card(computer_played_card)
-
-        if draw_stack and len(player_hand) < 5:
-            player_draw_card()
-        if draw_stack and len(computer_hand) < 5:
-            computer_draw_card()
-
-        result_message =  "Player used two points card and gets 2 points."
-        return discard_pile, result_message, played_info
-
-    elif computer_played_card.card_type == "twopoints":
-        # If copmuter uses two poins cards, they get 2 points 
-        computer_score += 2
-        discard_card(player_played_card)
-        discard_card(computer_played_card)
-
-        if draw_stack and len(player_hand) < 5:
-            player_draw_card()
-        if draw_stack and len(computer_hand) < 5:
-            computer_draw_card()
-
-        result_message =  "computer used two points card and gets 2 points."
-        return discard_pile, result_message, played_info
-    
     # Comparing numbers if colors match
     if player_played_card.color == computer_played_card.color:
         if player_played_card.number > computer_played_card.number:
