@@ -64,7 +64,7 @@ class Card:
         ''' Initializes the card with the given color, number, and card type '''
         self.color = color
         self.number = number
-        self.card_type = card_type  #regular, wild, watcher, colorstorm, ascendancy
+        self.card_type = card_type  #regular, wild, watcher, colorstorm, ascendancy, add two points
         self.selected = False
         
         # Load the image
@@ -76,6 +76,10 @@ class Card:
             self.image = pygame.image.load(os.path.join("CARDS", "COLORSTORM.png"))
         elif card_type == "ascendancy":
             self.image = pygame.image.load(os.path.join("CARDS", "ASCENDANCY.png"))
+        elif card_type == "twopoints":
+            self.image = pygame.image.load(os.path.join("CARDS", "TWOPOINTS.png"))
+        elif card_type == "twopoints2":
+            self.image = pygame.image.load(os.path.join("CARDS", "TWOPOINTS2.png"))
         else:
             self.image = pygame.image.load(os.path.join("CARDS", f"{color[0]}{number}.png"))
         
@@ -152,7 +156,9 @@ def initialize_deck():
     deck.append(Card("", 0, "watcher"))
     deck.append(Card("", 0, "colorstorm"))
     deck.append(Card("", 0, "ascendancy"))
-
+    deck.append(Card("", 0, "twopoints"))
+    deck.append(Card("", 0, "twopoints"))
+    
     shuffle(deck)
 
     return deck
@@ -424,12 +430,47 @@ def resolve_round():
     
     # Show the cards played
     played_info = f"Player played: {player_played_card} | Computer played: {computer_played_card}"
-
-    if player_played_card.card_type != "regular" or computer_played_card.card_type != "regular":
-        # For now, just put them in discard pile
+    
+    # Handling special cards
+    if player_played_card.card_type == "twopoints" and computer_played_card.card_type == "twopoints":
+        # If both players play two points card none of them gets the points
         discard_card(player_played_card)
         discard_card(computer_played_card)
-        result_message = "Special card played. No points awarded."
+
+        if draw_stack and len(player_hand) < 5:
+            player_draw_card()
+        if draw_stack and len(computer_hand) < 5:
+            computer_draw_card()
+
+        result_message =  "Both players used two points card! No points awarded"
+        return discard_pile, result_message, played_info
+
+    elif player_played_card.card_type == "twopoints":
+        # If player uses two poins cards, they get 2 points 
+        player_score += 2
+        discard_card(player_played_card)
+        discard_card(computer_played_card)
+
+        if draw_stack and len(player_hand) < 5:
+            player_draw_card()
+        if draw_stack and len(computer_hand) < 5:
+            computer_draw_card()
+
+        result_message =  "Player used two points card and gets 2 points"
+        return discard_pile, result_message, played_info
+
+    elif computer_played_card.card_type == "twopoints":
+        # If copmuter uses two poins cards, they get 2 points 
+        computer_score += 2
+        discard_card(player_played_card)
+        discard_card(computer_played_card)
+
+        if draw_stack and len(player_hand) < 5:
+            player_draw_card()
+        if draw_stack and len(computer_hand) < 5:
+            computer_draw_card()
+
+        result_message =  "computer used two points card and gets 2 points"
         return discard_pile, result_message, played_info
     
     # Comparing numbers if colors match
@@ -460,7 +501,7 @@ def resolve_round():
     discard_card(player_played_card)
     discard_card(computer_played_card)
 
-    # Draw new cards if needed
+    # Draw new cards 
     if draw_stack and len(player_hand) < 5:
         player_draw_card()
     if draw_stack and len(computer_hand) < 5:
@@ -548,7 +589,7 @@ def draw_wait_message():
     if game_state == WAITING_FOR_COMPUTER:
         font = pygame.font.SysFont(None, 36)
         text = font.render("Computer is thinking...", True, WHITE)
-        screen.blit(text, (SCREEN_WIDTH // 2 - text.get_width() // 2, SCREEN_HEIGHT // 2 + 150))
+        screen.blit(text, (SCREEN_WIDTH // 2 - text.get_width() // 2, SCREEN_HEIGHT // 2 + 100))
 #ID: 5672969
  
 #ID: 5670726
