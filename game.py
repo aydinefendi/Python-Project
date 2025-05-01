@@ -407,6 +407,27 @@ def calculate_points(player_card: Card, computer_card: Card,
 #ID: 5670726
 
 #ID: 5670726
+def quicksort(cards: list) -> list:
+    """
+    Sorts a lists of Cards objects in ascending order using Quicksort.
+
+    Parameters:
+        cards (list of cards): The list of Card objects to sort.
+
+    Returns:
+        list: A new list of cards sorted by their numbers
+    """
+
+    if len(cards) <= 1:
+        return cards
+    else:
+        pivot = cards[0]
+        less = [card for card in cards[1:] if card.number <= pivot.number]
+        greater = [card for card in cards[1:] if card.number > pivot.number]
+        return quicksort(less) + [pivot] + quicksort(greater)
+#ID: 5670726
+
+#ID: 5670726
 # Evaluate the round
 def resolve_round():
     """
@@ -454,9 +475,9 @@ def resolve_round():
             for card in draw_stack:
                 grouped[card.color].append(card) 
 
-            # Sort each color group numbers in ascending order
-            for colour_group in grouped.values():
-                colour_group.sort(key=lambda c: c.number)
+            # Sort each color group numbers in ascending order using quicksort
+            for color in grouped:
+                grouped[color] = quicksort(grouped[color])
 
             # shuffle color groups randomly
             color_order = list(grouped.keys())
