@@ -554,7 +554,7 @@ def draw_play_button():
         button_height = 50
         button_x = SCREEN_WIDTH // 2 - button_width // 2
         button_y = SCREEN_HEIGHT // 2 + 100
-        
+       
         # Draw the button
         pygame.draw.rect(screen, RED, (button_x, button_y, button_width, button_height))
         
@@ -801,7 +801,7 @@ def main():
     play_again_button_rect = None
     computer_play_time = 0
     running = True
-    
+   
     while running:
         current_time = pygame.time.get_ticks()
         
@@ -816,7 +816,7 @@ def main():
                     if play_button_rect and play_button_rect.collidepoint(event.pos):
                         if play_selected_card():
                             # Set the time when computer will play
-                            computer_play_time = current_time + 2000  # 2 seconds delay
+                            computer_play_time = current_time + 500
                     else:
                         # Check for card selection
                         selected_card = handle_card_selection(event.pos)
