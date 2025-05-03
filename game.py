@@ -482,7 +482,7 @@ def deal_cards():
     Returns:
         None
     """
-    global player_hand, computer_hand, draw_stack, player_score, computer_score, discard_pile
+    global player_hand, computer_hand, draw_stack, player_score, computer_score, discard_pile, top_four_cards
     
     # Reset scores when starting a new game
     player_score = 0
@@ -492,6 +492,7 @@ def deal_cards():
     player_hand = [draw_stack.pop() for _ in range(5)]
     computer_hand = [draw_stack.pop() for _ in range(5)]
     discard_pile = []
+    top_four_cards = []
 
 # Draw player's hand
 def draw_player_hand():
@@ -1294,6 +1295,7 @@ def main():
                         computer_play_time = 0
                         player_played_card = None
                         computer_played_card = None
+                        last_player_wild_choice = None
                         result_message = ""
                         game_state = SELECTING_CARD
         
