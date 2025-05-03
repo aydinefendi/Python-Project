@@ -39,6 +39,7 @@ SELECTING_CARD = 0
 WAITING_FOR_COMPUTER = 1
 SHOWING_RESULT = 2
 GAME_OVER = 3
+WILD_CARD = 4
 game_state = SELECTING_CARD
 
 #ID: 5670726
@@ -59,7 +60,15 @@ previous_computer_card = None
 result_message = ""
 #ID: 5670726
 
+#ID: 5671165 #####
+# Wild card global variables
+top_four_cards = []
+player_used_wild = False
+last_player_wild_choice = None
+#ID: 5671165
+
 # Card class
+#ID: 5672969, 5671165
 class Card:
     def __init__(self, color, number, card_type="regular"):
         ''' Initializes the card with the given color, number, and card type '''
@@ -124,7 +133,240 @@ class Card:
             return self.card_type.capitalize()
     #ID: 5672969
 
+    #ID: 5671165
+    #Comparison methods needed for MaxHeap
+    def __lt__(self, other: object) -> bool:
+        """Less than method to compare cards according to their number.
+
+        Args:
+            other (object): Another card to compare with.
+
+        Returns:
+            bool: True if self is less than other, otherwise False.
+        """
+        if not isinstance(other, Card):
+            return NotImplemented
+
+        if self.number < other.number:
+            return True
+        else:
+            return False
+
+    def __gt__(self, other: object) -> bool:
+        """Greater than method to compare cards according to their number.
+
+        Args:
+            other (object): Another card to compare with.
+
+        Returns:
+            bool: True if self is greater than other, otherwise False.
+        """
+        if not isinstance(other, Card):
+            return NotImplemented
+
+        if self.number > other.number:
+            return True
+        else:
+            return False
+
+    def __eq__(self, other: object) -> bool:
+        """Equality method to compare cards according to their color, number and card type.
+
+        Args:
+            other (object): Another card to compare with.
+
+        Returns:
+            bool: True if all attributes are equal, otherwise False.
+        """
+        if not isinstance(other, Card):
+            return False
+
+        if (self.color == other.color and 
+            self.number == other.number and 
+            self.card_type == other.card_type):
+            return True
+        else:
+            return False
+        
+    def __ne__(self, other: object) -> bool:
+        """Inequality method to compare cards according to their color, number and card type.
+
+        Args:
+            other (object): Another card to compare with.
+
+        Returns:
+            bool: True if any attribute doesn't match, otherwise False.
+        """
+        if self.__eq__(other):
+            return False
+        else:
+            return True
+    #ID: 5671165
+#ID: 5672969, 5671165
+
 #ID: 5671165
+#MaxHeap Class
+class MaxHeap:
+    """A max-heap data structure implementation for storing 
+    cards objects used for implementing Wild card.
+
+    This class adds elements to the MaxHeap list,
+    retrieves the largest element, and finds the top four largest values.
+    It uses a binary heap data structure that is stored in a list 
+    and starts at index 1.
+
+    Attributes:
+        heap_list (List[Card]): The initial list that represents the heap.
+        count (int): Number of elements in the heap (excluding 0 index).
+    """
+
+    def __init__(self) -> None:
+        """Initializes an empty max heap attributes with a
+        counter that starts at index 0.
+        """
+        self.heap_list: list = [None]
+        self.count: int = 0
+
+    def parent_idx(self, idx: int) -> int:
+        """Returns the index of the parent node.
+
+        Args:
+            idx (int): Index of the child node.
+
+        Returns:
+            int: Index of the parent node.
+        """
+        return idx // 2
+
+    def left_child_idx(self, idx: int) -> int:
+        """Returns the index of the left child node.
+
+        Args:
+            idx (int): Index of the parent node.
+
+        Returns:
+            int: Index of the left child node.
+        """
+        return idx * 2
+
+    def right_child_idx(self, idx: int) -> int:
+        """Returns the index of the right child node.
+
+        Args:
+            idx (int): Index of the parent node.
+
+        Returns:
+            int: Index of the right child node.
+        """
+        return idx * 2 + 1
+    
+    def child_present(self, idx: int) -> bool:
+        """Check if the given node index has at least one 
+        child (specifically, the left child's presence).
+
+        Args:
+            idx (int): Index of the parent node.
+
+        Returns:
+            bool: Returns True if the left child exists, otherwise False.
+        """
+        return self.left_child_idx(idx) <= self.count
+
+    def add(self, element: object) -> None:
+        """Adds a new element to the heap list and restores the heap property.
+
+        Args:
+            element (object): The element to be added to the heap list.
+
+        Returns:
+            None
+        """
+        self.count += 1
+        self.heap_list.append(element)
+        self.heapify_up()
+    
+    def heapify_up(self) -> None:
+        """Restores the max-heap property by moving the last 
+        element up to its correct position.
+        """
+        idx = self.count
+        while self.parent_idx(idx) > 0:
+            parent_idx = self.parent_idx(idx)
+            if self.heap_list[parent_idx] < self.heap_list[idx]:
+                self.heap_list[parent_idx], self.heap_list[idx] = self.heap_list[idx], self.heap_list[parent_idx]
+                idx = parent_idx
+            else:
+                break
+    
+    def retrieve_max(self) -> object:
+        """Removes the heap elements to restore the max-heap property 
+        and returns the maximum element from the heap.
+
+        Returns:
+            object: The maximum element, or None if the heap is empty.
+        """
+        if self.count == 0:
+            return None
+        max_value = self.heap_list[1]
+        self.heap_list[1] = self.heap_list[self.count]
+        self.count -= 1
+        self.heap_list.pop()
+        self.heapify_down()
+        return max_value
+
+    def heapify_down(self) -> None:
+        """Moves the top element to its correct position to maintain heap property.
+        """
+        idx = 1
+        while self.child_present(idx):
+            larger_child_idx = self.get_larger_child_idx(idx)
+            if self.heap_list[idx] < self.heap_list[larger_child_idx]:
+                self.heap_list[idx], self.heap_list[larger_child_idx] = self.heap_list[larger_child_idx], self.heap_list[idx]
+                idx = larger_child_idx
+            else:
+                break
+
+    def get_larger_child_idx(self, idx: int) -> int:
+        """Returns the index of the larger child node.
+
+        Args:
+            idx (int): Index of the parent node.
+
+        Returns:
+            int: Index of the child with the larger value.
+        """
+        if self.right_child_idx(idx) > self.count:
+            return self.left_child_idx(idx)
+        else:
+            left_child = self.heap_list[self.left_child_idx(idx)]
+            right_child = self.heap_list[self.right_child_idx(idx)]
+
+        if left_child > right_child:
+            return self.left_child_idx(idx)
+        else:
+            return self.right_child_idx(idx)
+
+    def get_largest_four(self) -> list:
+        """Returns the top four largest elements in the heap without modifying the original heap.
+
+        Returns:
+            list: A list of up to four largest elements in descending order.
+        """
+        if self.count == 0:
+            return []
+
+        temp_heap = MaxHeap()
+        temp_heap.heap_list = self.heap_list[:]
+        temp_heap.count = self.count
+
+        largest = []
+        for _ in range(min(4, self.count)):
+            largest.append(temp_heap.retrieve_max())
+        return largest
+#ID: 5671165
+
+#ID: 5671165
+#Shuffling algorithm
 def shuffle(array: list) -> list:
     """Shuffles the cards inside the deck in place using the Fisher-Yates algorithm.
     
@@ -141,6 +383,27 @@ def shuffle(array: list) -> list:
     return array
 #ID: 5671165
 
+#ID: 5671165
+#Check if a list or cards objects has a regular cards
+def has_regular(cards: list[Card]) -> bool:
+    """Checks whether the given list of cards contains any regular cards.
+
+    A regular card is categorised by the attribute `card_type` equal to "regular".
+    This is used for the Wild card implementation.
+
+    Args:
+        cards (list[Card]): A list of Card objects to be checked.
+
+    Returns:
+        bool: True if at least one card is regular, otherwise False.
+    """
+    for card in cards:
+        if card.card_type == "regular":
+            return True
+    return False
+#ID: 5671165
+
+#ID: 5672969
 # Initialize the deck
 def initialize_deck():
     ''' Initializes the deck of cards '''
@@ -163,8 +426,7 @@ def initialize_deck():
     shuffle(deck)
 
     return deck
-
-#ID: 5671165
+#ID: 5672969
 
 #Adds a card to the discard pile
 def discard_card(card: Card) -> None:
@@ -280,21 +542,58 @@ def draw_played_cards():
         screen.blit(text, (SCREEN_WIDTH // 2 - text.get_width() // 2, SCREEN_HEIGHT // 2 + 100))
 #ID: 5672969
 
-#ID: 5672969
+#ID: 5672969, 5671165
 # Computer plays a card
-def computer_play_card():
+def computer_play_card() -> tuple[Card | None, bool]:
     """Computer selects a card to play.
-    
-    This function randomly selects a card from the computer's hand to play.
-    
+
+    The computer randomly selects a card from the computer's hand.
+    If a wild card is selected, it is played and discarded.
+    The computer then uses the max-heap data structure to choose one of the
+    largest four regular cards from the draw stack or discard pile randomly.
+    That card is returned as the computer played card.
+
     Returns:
-        Card or None: The selected card if the computer has cards, None otherwise.
+        tuple[Card | None, bool]: Contains:
+            - The selected Card object.
+            - A boolean indicator to tell whether the card was chosen as a result of using the Wild card (True), 
+            or from computer hand (False).
     """
-    #computer just plays a random card
-    if computer_hand:
-        return computer_hand.pop(random.randint(0, len(computer_hand) - 1))
-    return None
-#ID: 5672969
+    global draw_stack
+
+    if not computer_hand:
+        return None, False
+
+    index = random.randint(0, len(computer_hand) - 1)
+    card = computer_hand[index]
+
+    #ID: 5671165
+    if card.card_type == "wild":
+        # Play and discard the wild card
+        computer_hand.pop(index)
+        discard_card(card)
+
+        # Choose source list(draw stack or discard pile) based on regular card availability
+        source = draw_stack if has_regular(draw_stack) else discard_pile
+
+        # Build a max-heap list to find the largest four cards
+        heap = MaxHeap()
+        for card in source:
+            if card.card_type == "regular":
+                heap.add(card)
+
+        largest_four = heap.get_largest_four()
+        if not largest_four:
+            return None, False
+        
+        # Remove the chosen card from draw stack
+        chosen_card = random.choice(largest_four)
+        draw_stack[:] = list(filter(lambda card: card is not chosen_card, draw_stack))
+        return chosen_card, True
+    #ID: 5671165
+
+    return computer_hand.pop(index), False 
+#ID: 5672969, 5671165
 
 #ID: 5672969
 # Check if the game is over
@@ -429,12 +728,21 @@ def quicksort(cards: list) -> list:
 
 #ID: 5670726
 # Evaluate the round
-def resolve_round():
-    """
-    Handles a single round of the game:
+def resolve_round(
+    computer_used_wild: bool = False,
+    player_used_wild: bool = False,
+    player_wild_card: Card | None = None
+) -> tuple[list[Card], str, str]:
+    """Handles a single round of the game.
+
       Compares player and computer cards.
       Applies scoring and bonus logic.
       Updates the discard pile, game state, and tracks previously played cards.
+
+    Args:
+        computer_used_wild (bool): True if the computer played the Wild card.
+        player_used_wild (bool): True if the player played the Wild card.
+        player_wild_card (Card): The card selected by the player using the Wild card.
 
     Returns:
         tuple:
@@ -451,7 +759,13 @@ def resolve_round():
         return discard_pile, result_message, "No cards played."
     
     # Show the cards played
-    played_info = f"Player played: {player_played_card} | Computer played: {computer_played_card}"
+    played_info = f"Player played: {player_played_card}"
+    if player_used_wild and player_wild_card:
+        played_info += f" (using Wild card)"
+
+    played_info += f" | Computer played: {computer_played_card}"
+    if computer_used_wild:
+        played_info += " (using Wild card)"
 
     # Handling colorstorm card and/or two points card combinations or with regular cards
     twopoints_player = player_played_card.card_type == "twopoints"
@@ -527,7 +841,7 @@ def resolve_round():
         elif twopoints_computer and ascendancy_played:
             result_message = "Computer used Two points card and Ascendancy is played! Draw stack is sorted in ascending order"
         elif twopoints_computer:
-            result_message = "computer used two points card and gets 2 points"
+            result_message = "Computer used two points card and gets 2 points"
         
         if draw_stack and len(player_hand) < 5: # Draw cards
             player_draw_card()
@@ -617,24 +931,35 @@ def draw_play_button():
 
 #ID: 5672969
 # Process selected card
-def play_selected_card():
-    """Plays the selected card.
-    
-    This function removes the selected card from the player's hand and
-    sets it as the player's played card for the current round.
-    
+def play_selected_card() -> bool:
+    """Plays the selected card and updates the game state.
+
+    This function checks the player's hand for the selected card.
+    If the Wild card is selected, the wild card logic is implemented and the card 
+    is discarded, otherwise the selected card is set as the player's 
+    played card.
+    The selected card is removed from player's hand, and the game state is updated.
+
     Returns:
-        bool: True if a card was played, False otherwise.
+        bool: True if a regular card was played, 
+        False if a wild card was played or no card was selected.
     """
     global player_hand, player_played_card, game_state
-    
-    for i, card in enumerate(player_hand):
+
+    for i, card in enumerate(player_hand): ####
         if card.selected:
-            player_played_card = player_hand.pop(i)
-            game_state = WAITING_FOR_COMPUTER
             card.selected = False
-            return True
-    
+            if card.card_type == "wild":
+                wild_card_logic()
+                discard_card(card)
+                game_state = WILD_CARD
+                player_hand.pop(i)
+                return False
+            else:
+                player_played_card = card
+                player_hand.pop(i)
+                game_state = WAITING_FOR_COMPUTER
+                return True
     return False
 #ID: 5672969
 
@@ -730,14 +1055,74 @@ def draw_discard_pile() -> None:
         card.draw(x, y, face_up=False)
 #ID: 5671165
 
+#ID: 5671165
+# Wild card logic implementation
+def wild_card_logic() -> None:
+    """Selects the top four regular cards using a max-heap strategy for the wild card effect.
+
+    This function chooses a list source (draw stack or discard pile) when 
+    the Wild card is played based on regular card availability.
+    It uses the max-heap data structure to extract the four largest 
+    values from regular cards.
+    These cards are stored in the global variable `top_four_cards`, 
+    which will be shown to the player
+    when a wild card is played.
+    """
+    global draw_stack, discard_pile, top_four_cards
+
+    source = draw_stack if has_regular(draw_stack) else discard_pile
+
+    heap = MaxHeap()
+    for card in source:
+        if card.card_type == "regular":
+            heap.add(card)
+
+    top_four_cards = heap.get_largest_four()
+#ID: 5671165
+
+#ID: 5671165
+# Draw the wild card display
+def draw_wild_display() -> None:
+    """Draws the selection screen when the Wild card is played.
+
+    This function draws the selection screen when the Wild card is played
+    on top of the game screen, displays a message to the player to choose
+    one of the four cards and displays the largest four regular cards stored in 
+    the global variable `top_four_cards`.
+    """
+    global top_four_cards
+
+    overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+    overlay.fill((0, 0, 0, 180))
+    screen.blit(overlay, (0, 0))
+    
+    # Draw game 'Choose one of these cards' message
+    font_large = pygame.font.SysFont(None, 72)
+    wild_card_text = font_large.render("Choose one of these cards", True, WHITE)
+    screen.blit(wild_card_text, (SCREEN_WIDTH // 2 - wild_card_text.get_width() // 2, SCREEN_HEIGHT // 4))
+    
+    # Draw wild cards options 
+    total_width = len(top_four_cards) * CARD_WIDTH + (len(top_four_cards) - 1) * CARD_SPACING
+
+    # Calculate the starting x position to center the cards
+    start_x = (SCREEN_WIDTH - total_width) // 2
+    
+    # Draw each card
+    for i, card in enumerate(top_four_cards):
+        x = start_x + i * (CARD_WIDTH + CARD_SPACING)
+        y = SCREEN_HEIGHT - CARD_HEIGHT - 50
+        card.draw(x, y, face_up=True)
+#ID: 5671165
+
 #ID: 5672969
 # Draw the game board
 def draw_game_board():
     """Draws the game board.
     
     This function draws all the game elements including the player's hand,
-    played cards, discard pile, draw stack, play button, wait message,
-    and scores based on the current game state.
+    played cards, discard pile, draw stack, play button, wait message, 
+    the Wild card display if it is choosen by player and 
+    scores based on the current game state.
     
     Returns:
         tuple: A tuple containing (play_button_rect, play_again_button_rect)
@@ -769,6 +1154,10 @@ def draw_game_board():
         # Draw scores and round messages
         draw_scores_and_messages()
         
+        # Draw the Wild card select display if the Wild card is chosen
+        if game_state == WILD_CARD:
+            draw_wild_display()
+
         # Draw game state specific instructions
         font = pygame.font.SysFont(None, 36)
         if game_state == SELECTING_CARD:
@@ -833,12 +1222,14 @@ def main():
     - Game state transitions
     - User input
     - Game over conditions
-    
+    - Wild card implementation
+
     Returns:
         None
     """
     global player_score, computer_score, game_state, player_played_card, computer_played_card, result_message
     global previous_player_card, previous_computer_card, played_card_message
+    global top_four_cards, player_used_wild, last_player_wild_choice
 
     # Initialize the game
     deal_cards()
@@ -866,6 +1257,22 @@ def main():
                     else:
                         # Check for card selection
                         selected_card = handle_card_selection(event.pos)
+
+            # Handles user input if the Wild card is selected
+            if game_state == WILD_CARD:  #######
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    for card in top_four_cards:
+                        if card.rect.collidepoint(event.pos):
+                            # Set the selected card as the player played card
+                            player_played_card = card
+                            # Track the player's Wild card selection for info
+                            last_player_wild_choice = card
+                            # Mark that the player used the Wild card
+                            player_used_wild = True         
+                            top_four_cards.remove(card)
+                            # Checks that the chosen card is not in the draw stack 
+                            draw_stack[:] = list(filter(lambda c: c is not card, draw_stack))
+                            game_state = WAITING_FOR_COMPUTER
             
             elif game_state == SHOWING_RESULT:
                 # Progress to next round when user clicks
@@ -892,8 +1299,11 @@ def main():
         
         # Handle computer's turn
         if game_state == WAITING_FOR_COMPUTER and current_time >= computer_play_time:
-            computer_played_card = computer_play_card()
-            discard_pile, result_message, played_info = resolve_round()  
+            computer_played_card, computer_used_wild = computer_play_card()
+            discard_pile, result_message, played_info = resolve_round(computer_used_wild, player_used_wild, last_player_wild_choice)
+            player_used_wild = False  # reset after use
+            last_player_wild_choice = None
+
             played_card_message = played_info  
             if game_state != GAME_OVER:  
                 game_state = SHOWING_RESULT
