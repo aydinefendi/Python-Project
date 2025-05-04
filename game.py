@@ -90,6 +90,8 @@ class Card:
             self.image = pygame.image.load(os.path.join("CARDS", "TWOPOINTS.png"))
         elif card_type == "twopoints2":
             self.image = pygame.image.load(os.path.join("CARDS", "TWOPOINTS2.png"))
+        elif card_type == "joker":
+            self.image = pygame.image.load(os.path.join("CARDS", "JOKER.png"))
         else:
             self.image = pygame.image.load(os.path.join("CARDS", f"{color[0]}{number}.png"))
         
@@ -422,6 +424,7 @@ def initialize_deck():
     deck.append(Card("", 0, "ascendancy"))
     deck.append(Card("", 0, "twopoints"))
     deck.append(Card("", 0, "twopoints"))
+    deck.append(Card("", 0, "joker"))
     
     shuffle(deck)
 
@@ -773,16 +776,36 @@ def resolve_round(
     twopoints_computer = computer_played_card.card_type == "twopoints"
     colorstorm_played = player_played_card.card_type == "colorstorm" or computer_played_card.card_type == "colorstorm"
     ascendancy_played = player_played_card.card_type == "ascendancy" or computer_played_card.card_type == "ascendancy"
+    joker_player = player_played_card.card_type =="joker"
+    joker_computer = computer_played_card.card_type =="joker"
 
-    if colorstorm_played or twopoints_player or twopoints_computer or ascendancy_played:
+    if colorstorm_played or twopoints_player or twopoints_computer or ascendancy_played or joker_player or joker_computer:
         discard_card(player_played_card)
         discard_card(computer_played_card)
 
         # Handling two points card
         if twopoints_player:
             player_score += 2
-        if twopoints_computer:
+        elif twopoints_computer:
             computer_score += 2
+
+        # Handling joker card
+        if joker_player:
+            if computer_played_card.card_type == "regular":
+                player_score += computer_played_card.number
+                result_message = f"Player played joker and gets {computer_played_card.number} points!"
+            else:
+                player_score += 5
+                result_message = f"Player played joker and gets 5 points! {computer_played_card.card_type.capitalize()} is not activated"
+            
+        elif joker_computer:
+            if player_played_card.card_type == "regular":
+                computer_score += player_played_card.number
+                result_message = f"Computer played joker and gets {player_played_card.number} points!"
+            else:
+                computer_score += 5
+                result_message = f"computer played joker and gets 5 points! {player_played_card.card_type.capitalize()} is not activated"
+
 
         if colorstorm_played and ascendancy_played: # Handles if both colorstorm and ascendancy played together, one of them is randomly chosen
             if len(draw_stack) >= 3:
@@ -828,21 +851,22 @@ def resolve_round(
             else:
                 result_message = "Ascendancy played! There is no enough cards to sort the draw stack"
 
-        # Two points card combination result messages
-        elif twopoints_player and twopoints_computer:
-            result_message =  "Both players used Two points card! Each gets 2 points."
-        elif twopoints_player and colorstorm_played:
-            result_message = "Player used Two points card and Colorstorm is played! Draw stack is reordered"
-        elif twopoints_player and ascendancy_played:
-            result_message = "Player used Two points card and Ascendancy is played! Draw stack is sorted in ascending order"
-        elif twopoints_player:
-            result_message = "Player used two points card and gets 2 points"
-        elif twopoints_computer and colorstorm_played:
-            result_message = "Computer used Two points card and Colorstorm is played! Draw stack is reordered"
-        elif twopoints_computer and ascendancy_played:
-            result_message = "Computer used Two points card and Ascendancy is played! Draw stack is sorted in ascending order"
-        elif twopoints_computer:
-            result_message = "Computer used two points card and gets 2 points"
+        # Two points card combination result messages (if joker wasnt played)
+        elif not (joker_player or joker_computer):
+            if twopoints_player and twopoints_computer:
+                result_message =  "Both players used Two points card! Each gets 2 points."
+            elif twopoints_player and colorstorm_played:
+                result_message = "Player used Two points card and Colorstorm is played! Draw stack is reordered"
+            elif twopoints_player and ascendancy_played:
+                result_message = "Player used Two points card and Ascendancy is played! Draw stack is sorted in ascending order"
+            elif twopoints_player:
+                result_message = "Player used two points card and gets 2 points"
+            elif twopoints_computer and colorstorm_played:
+                result_message = "Computer used Two points card and Colorstorm is played! Draw stack is reordered"
+            elif twopoints_computer and ascendancy_played:
+                result_message = "Computer used Two points card and Ascendancy is played! Draw stack is sorted in ascending order"
+            elif twopoints_computer:
+                result_message = "computer used two points card and gets 2 points"
         
         if draw_stack and len(player_hand) < 5: # Draw cards
             player_draw_card()
