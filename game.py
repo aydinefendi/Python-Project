@@ -759,7 +759,7 @@ def resolve_round(
     global player_hand, computer_hand, game_state, result_message
     global previous_player_card, previous_computer_card
     
-    if not player_played_card or not computer_played_card:
+    if not player_played_card or not computer_played_card: # Check if both player played a card
         return discard_pile, result_message, "No cards played."
     
     # Show the cards played
@@ -771,7 +771,7 @@ def resolve_round(
     if computer_used_wild:
         played_info += " (using Wild card)"
 
-    # Handling colorstorm card and/or two points card combinations or with regular cards
+    # Handling special card vs special card combinations
     twopoints_player = player_played_card.card_type == "twopoints"
     twopoints_computer = computer_played_card.card_type == "twopoints"
     colorstorm_played = player_played_card.card_type == "colorstorm" or computer_played_card.card_type == "colorstorm"
