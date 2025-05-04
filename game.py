@@ -60,11 +60,17 @@ previous_computer_card = None
 result_message = ""
 #ID: 5670726
 
-#ID: 5671165 #####
+#ID: 5671165
 # Wild card global variables
 top_four_cards = []
 player_used_wild = False
 last_player_wild_choice = None
+#ID: 5671165
+
+#ID: 5671165
+# Watcher card global variables
+player_card_history = None
+computer_card_history = None
 #ID: 5671165
 
 # Card class
@@ -367,6 +373,66 @@ class MaxHeap:
         return largest
 #ID: 5671165
 
+#ID: 5671165 #######
+class Queue:
+    """Fixed size queue implementation using lists.
+        
+    This queue includes a method of adding and removing items from the object 
+    list of data at the same time according to queue properties and queue size. 
+    The class also includes methods for indexing, clearing queue data and 
+    extracting queue length.
+    
+    Attributes:
+        size (int): The maximum number of elements in the queue.
+        data (List[Card]): List to store queue data in.
+    """
+    def __init__(self, size: int) -> None:
+        """Initialise queue attributes with a fixed size.
+
+        Args:
+            size (int): The Card objects the queue countains.
+        """
+        self.size: int = size
+        self.data: list = []
+
+    def enqueue(self, card) -> None:
+        """Add a Card object to the front of the queue.
+
+        If the queue is full of cards, the first object intered the queue
+        is removed before inserting the new one.
+
+        Args:
+            card: The Card object needs to be added in the queue.
+        """
+        if len(self.data) >= self.size:
+            self.data.pop()
+        self.data.insert(0, card)
+
+    def clear(self) -> None:
+        """Remove all Card objects from the queue.
+        """
+        self.data = []
+
+    def __getitem__(self, index: int):
+        """Method that gits Card object index from the queue.
+
+        Args:
+            index (int): The index of the Card object needs to be found.
+
+        Returns:
+            The Card object at that index.
+        """
+        return self.data[index]
+
+    def __len__(self) -> int:
+        """Method to get the length of a queue.
+
+        Returns:
+            The length of the queue.
+        """
+        return len(self.data)
+#ID: 5671165
+
 #ID: 5671165
 #Shuffling algorithm
 def shuffle(array: list) -> list:
@@ -457,7 +523,8 @@ def player_draw_card() -> None:
     Returns:
         None
     """
-    player_hand.append(draw_stack.pop())
+    if draw_stack:
+        player_hand.append(draw_stack.pop())
 #ID: 5671165
 
 #ID: 5671165
@@ -471,7 +538,8 @@ def computer_draw_card() -> None:
     Returns:
         None
     """
-    computer_hand.append(draw_stack.pop())
+    if draw_stack:
+        computer_hand.append(draw_stack.pop())
 #ID: 5671165
 
 #ID: 5672969
@@ -496,6 +564,24 @@ def deal_cards():
     computer_hand = [draw_stack.pop() for _ in range(5)]
     discard_pile = []
     top_four_cards = []
+#ID: 5672969
+
+#ID: 5671165
+#Initialize Watcher queues
+def initialise_watcher_history() -> None:
+    """Initialise history queues for Watcher card.
+
+    Build fixed size queues to track the last two cards played by both the
+    player and the computer. These histories are used by the Watcher card logic. 
+
+    Returns:
+        None
+    """
+    global player_card_history, computer_card_history
+
+    player_card_history = Queue(2)
+    computer_card_history = Queue(2)
+#ID: 5671165
 
 # Draw player's hand
 def draw_player_hand():
@@ -556,6 +642,8 @@ def computer_play_card() -> tuple[Card | None, bool]:
     The computer then uses the max-heap data structure to choose one of the
     largest four regular cards from the draw stack or discard pile randomly.
     That card is returned as the computer played card.
+    Also, it filters the cards if the Watcher card is in the computer hand. 
+    So the computer don't choose Watcher card.
 
     Returns:
         tuple[Card | None, bool]: Contains:
@@ -567,8 +655,13 @@ def computer_play_card() -> tuple[Card | None, bool]:
 
     if not computer_hand:
         return None, False
-
-    index = random.randint(0, len(computer_hand) - 1)
+    
+    #Filter computer hand if Watcher card in computer hand
+    playable_cards = list(filter(lambda card: card.card_type != "watcher", computer_hand))
+    if not playable_cards:
+        return None, False
+    
+    index = random.randint(0, len(playable_cards) - 1)
     card = computer_hand[index]
 
     #ID: 5671165
@@ -759,6 +852,8 @@ def resolve_round(
     global player_hand, computer_hand, game_state, result_message
     global previous_player_card, previous_computer_card
     
+    watcher_message = ""
+
     if not player_played_card or not computer_played_card: # Check if both player played a card
         return discard_pile, result_message, "No cards played."
     
@@ -770,6 +865,36 @@ def resolve_round(
     played_info += f" | Computer played: {computer_played_card}"
     if computer_used_wild:
         played_info += " (using Wild card)"
+
+    #Track last played cards for Watcher implementation
+    player_card_history.enqueue(player_played_card)
+    computer_card_history.enqueue(computer_played_card)
+
+    #Player Watcher card watching computer history
+    if len(computer_card_history) == 2:
+        c1, c2 = computer_card_history[0], computer_card_history[1]
+        if c1.color == c2.color:
+            for i, card in enumerate(player_hand):
+                if card.card_type == "watcher":
+                    bonus = (c1.number + c2.number + 1) // 2
+                    player_score += bonus
+                    watcher_message += f"Player's Watcher triggered! +{bonus} points."
+                    discard_card(player_hand.pop(i))
+                    player_draw_card()
+                    break
+
+    #Computer Watcher card watching computer history
+    if len(player_card_history) == 2:
+        p1, p2 = player_card_history[0], player_card_history[1]
+        if p1.color == p2.color:
+            for i, card in enumerate(computer_hand):
+                if card.card_type == "watcher":
+                    bonus = (p1.number + p2.number + 1) // 2
+                    computer_score += bonus
+                    watcher_message += f"Computer's Watcher triggered! +{bonus} points."
+                    discard_card(computer_hand.pop(i))
+                    computer_draw_card()
+                    break
 
     # Handling special card vs special card combinations
     twopoints_player = player_played_card.card_type == "twopoints"
@@ -896,6 +1021,10 @@ def resolve_round(
             round_message = "It's a tie! No points awarded."
     else:
         round_message = "Colours don't match! No points awarded."
+
+    #Illustrate Watcher card message if executed
+    if watcher_message:
+        round_message += " " + watcher_message
 
     result_message = round_message
 
@@ -1226,6 +1355,10 @@ def handle_card_selection(pos):
                      None if no card was selected.
     """
     for card in player_hand:
+        #Prevent choosing Watcher card
+        if card.card_type == "watcher":
+            continue
+
         if card.rect.collidepoint(pos):
             # Deselect all cards
             for c in player_hand:
@@ -1255,9 +1388,11 @@ def main():
     global player_score, computer_score, game_state, player_played_card, computer_played_card, result_message
     global previous_player_card, previous_computer_card, played_card_message
     global top_four_cards, player_used_wild, last_player_wild_choice
+    global player_card_history, computer_card_history
 
     # Initialize the game
     deal_cards()
+    initialise_watcher_history()
     selected_card = None
     play_button_rect = None
     play_again_button_rect = None
@@ -1313,6 +1448,8 @@ def main():
                     if play_again_button_rect and play_again_button_rect.collidepoint(event.pos):
                         # Reset the game
                         deal_cards()
+                        player_card_history.clear()
+                        computer_card_history.clear()
                         selected_card = None
                         play_button_rect = None
                         play_again_button_rect = None
