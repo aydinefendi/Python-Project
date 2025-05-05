@@ -869,7 +869,7 @@ def resolve_round(
                     result_message = "Ascendancy played! There is no enough cards to sort the draw stack"
 
         # Two points card + swap card combination result messages (if joker wasnt played)
-        elif not (joker_player or joker_computer):
+        if not (joker_player or joker_computer):
             if twopoints_player and twopoints_computer:
                 result_message =  "Both players used Two points card! Each gets 2 points."
             elif twopoints_player and colorstorm_played:
@@ -904,10 +904,14 @@ def resolve_round(
             elif swap_computer:
                 result_message = "Computer used Swap! Hands have been exchanged"
                 
-        if draw_stack and len(player_hand) < 5: # Draw cards
-            player_draw_card()
-        if draw_stack and len(computer_hand) < 5:
-            computer_draw_card()
+        draw_order = ["player", "computer"]
+        draw_order = shuffle(draw_order) # Makes drawing cards order random
+        for who in draw_order:
+            if draw_stack:
+                if who == "player" and len(player_hand) < 5:
+                    player_draw_card()
+                elif who == "computer" and len(computer_hand) < 5:
+                    computer_draw_card()
 
         return discard_pile, result_message, played_info
 
