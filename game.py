@@ -98,6 +98,8 @@ class Card:
             self.image = pygame.image.load(os.path.join("CARDS", "TWOPOINTS2.png"))
         elif card_type == "joker":
             self.image = pygame.image.load(os.path.join("CARDS", "JOKER.png"))
+        elif card_type == "swap":
+            self.image = pygame.image.load(os.path.join("CARDS", "SWAP.png"))
         else:
             self.image = pygame.image.load(os.path.join("CARDS", f"{color[0]}{number}.png"))
         
@@ -491,6 +493,7 @@ def initialize_deck():
     deck.append(Card("", 0, "twopoints"))
     deck.append(Card("", 0, "twopoints"))
     deck.append(Card("", 0, "joker"))
+    deck.append(Card("", 0, "swap"))
     
     shuffle(deck)
 
@@ -855,14 +858,14 @@ def resolve_round(
     watcher_message = ""
 
     if not player_played_card or not computer_played_card: # Check if both player played a card
+    
         return discard_pile, result_message, "No cards played."
     
-    # Show the cards played
-    played_info = f"Player played: {player_played_card}"
+    played_info = f"Player played: {player_played_card}" # Show the cards played
     if player_used_wild and player_wild_card:
         played_info += f" (using Wild card)"
 
-    played_info += f" | Computer played: {computer_played_card}"
+    played_info += f" | Computer played: {computer_played_card}" # Show the cards played
     if computer_used_wild:
         played_info += " (using Wild card)"
 
@@ -903,16 +906,19 @@ def resolve_round(
     ascendancy_played = player_played_card.card_type == "ascendancy" or computer_played_card.card_type == "ascendancy"
     joker_player = player_played_card.card_type =="joker"
     joker_computer = computer_played_card.card_type =="joker"
+    swap_player = player_played_card.card_type =="swap"
+    swap_computer = computer_played_card.card_type =="swap"
 
-    if colorstorm_played or twopoints_player or twopoints_computer or ascendancy_played or joker_player or joker_computer:
+    if colorstorm_played or twopoints_player or twopoints_computer or ascendancy_played or joker_player or joker_computer or swap_player or swap_computer:
         discard_card(player_played_card)
         discard_card(computer_played_card)
 
         # Handling two points card
-        if twopoints_player:
-            player_score += 2
-        elif twopoints_computer:
-            computer_score += 2
+        if not (joker_player or joker_computer):
+            if twopoints_player:
+                player_score += 2
+            if twopoints_computer:
+                computer_score += 2
 
         # Handling joker card
         if joker_player:
@@ -931,10 +937,40 @@ def resolve_round(
                 computer_score += 5
                 result_message = f"computer played joker and gets 5 points! {player_played_card.card_type.capitalize()} is not activated"
 
+        # Handling swap card
+        if not (joker_player or joker_computer):
+            if swap_player or swap_computer:
+                if draw_stack:
+                    player_draw_card()
+                if draw_stack:
+                    computer_draw_card()
+                player_hand, computer_hand = computer_hand, player_hand
 
-        if colorstorm_played and ascendancy_played: # Handles if both colorstorm and ascendancy played together, one of them is randomly chosen
-            if len(draw_stack) >= 3:
-                if random.choice(["colorstorm", "ascendancy"]) == "colorstorm": # Handles if colorstorm is activated
+        # Handles if both colorstorm and ascendancy played together, one of them is randomly chosen
+        if not (joker_player or joker_computer):
+            if colorstorm_played and ascendancy_played: 
+                if len(draw_stack) >= 3:
+                    if random.choice(["colorstorm", "ascendancy"]) == "colorstorm": # Handles if colorstorm is activated
+                        grouped = defaultdict(list) # Group cards by color
+                        for card in draw_stack:
+                            grouped[card.color].append(card) 
+                        for color in grouped: # Sort each color group numbers in ascending order using quicksort
+                            grouped[color] = quicksort(grouped[color])
+                        color_order = list(grouped.keys()) # shuffle color groups randomly
+                        shuffle(color_order)
+                        draw_stack = [] # Rebuild the draw stack
+                        for color in color_order:
+                            draw_stack.extend(grouped[color])
+                    else: # Handles if ascendancy is activated
+                        draw_stack = quicksort(draw_stack)
+                    result_message = "Colorstorm and Ascendancy played! One card is activated, but it's a mystery."
+                else:
+                    result_message = "Not enough cards in the draw stack to activate special card."
+
+        # Handling only colorstorm card
+        if not (joker_player or joker_computer):
+            if colorstorm_played:
+                if len(draw_stack) >= 3:
                     grouped = defaultdict(list) # Group cards by color
                     for card in draw_stack:
                         grouped[card.color].append(card) 
@@ -945,58 +981,63 @@ def resolve_round(
                     draw_stack = [] # Rebuild the draw stack
                     for color in color_order:
                         draw_stack.extend(grouped[color])
-                else: # Handles if ascendancy is activated
-                    draw_stack = quicksort(draw_stack)
-                result_message = "Colorstorm and Ascendancy played! One card is activated, but it's a mystery."
-            else:
-                result_message = "Not enough cards in the draw stack to activate special card."
-
-        # Handling only colorstorm card
-        elif colorstorm_played:
-            if len(draw_stack) >= 3:
-                grouped = defaultdict(list) # Group cards by color
-                for card in draw_stack:
-                    grouped[card.color].append(card) 
-                for color in grouped: # Sort each color group numbers in ascending order using quicksort
-                    grouped[color] = quicksort(grouped[color])
-                color_order = list(grouped.keys()) # shuffle color groups randomly
-                shuffle(color_order)
-                draw_stack = [] # Rebuild the draw stack
-                for color in color_order:
-                    draw_stack.extend(grouped[color])
-                result_message = "Colorstorm played! Draw stack reordered by color"
-            else:
-                result_message = "Colorstorm played! There is no enough cards to reorder in the draw stack"
+                    result_message = "Colorstorm played! Draw stack reordered by color"
+                else:
+                    result_message = "Colorstorm played! There is no enough cards to reorder in the draw stack"
 
         # Handling only acendancy card
-        elif ascendancy_played: # Sorts the draw stack by numbers
-            if len(draw_stack) >= 2:
-                draw_stack = quicksort(draw_stack)
-                result_message = "Ascendancy played! Draw stack is sorted in ascending order"
-            else:
-                result_message = "Ascendancy played! There is no enough cards to sort the draw stack"
+        if not (joker_player or joker_computer):
+            if ascendancy_played: # Sorts the draw stack by numbers
+                if len(draw_stack) >= 2:
+                    draw_stack = quicksort(draw_stack)
+                    result_message = "Ascendancy played! Draw stack is sorted in ascending order"
+                else:
+                    result_message = "Ascendancy played! There is no enough cards to sort the draw stack"
 
-        # Two points card combination result messages (if joker wasnt played)
-        elif not (joker_player or joker_computer):
+        # Two points card + swap card combination result messages (if joker wasnt played)
+        if not (joker_player or joker_computer):
             if twopoints_player and twopoints_computer:
                 result_message =  "Both players used Two points card! Each gets 2 points."
             elif twopoints_player and colorstorm_played:
-                result_message = "Player used Two points card and Colorstorm is played! Draw stack is reordered"
+                result_message = "Player used Two points card and Colorstorm is played! Player gets 2 points and draw stack is reordered"
             elif twopoints_player and ascendancy_played:
-                result_message = "Player used Two points card and Ascendancy is played! Draw stack is sorted in ascending order"
+                result_message = "Player used Two points card and Ascendancy is played! Player gets 2 points and draw stack is sorted in ascending order"
+            elif twopoints_computer and swap_player:
+                result_message = "Computer used Two points card and Player used Swap card! Computer gets 2 points and hands have been exchanged"
+            elif swap_player and ascendancy_played:
+                result_message = "Player used Swap card and Ascendancy is played! Draw stack is sorted in ascending order and hands have been exchanged"
+            elif swap_player and colorstorm_played:
+                result_message = "Player used Swap card and Colorstorm is played! Draw stack is reordered and hands have been exchanged"
             elif twopoints_player:
                 result_message = "Player used two points card and gets 2 points"
+                
             elif twopoints_computer and colorstorm_played:
-                result_message = "Computer used Two points card and Colorstorm is played! Draw stack is reordered"
+                result_message = "Computer used Two points card and Colorstorm is played! Computer gets 2 points and draw stack is reordered"
             elif twopoints_computer and ascendancy_played:
-                result_message = "Computer used Two points card and Ascendancy is played! Draw stack is sorted in ascending order"
+                result_message = "Computer used Two points card and Ascendancy is played! Computer gets 2 points and draw stack is sorted in ascending order"
+            elif twopoints_player and swap_computer:
+                result_message = "Player used Two points card and Computer used Swap card! Player gets 2 points and hands have been exchanged"
+            elif swap_computer and ascendancy_played:
+                result_message = "computer used Swap card and Ascendancy is played! Draw stack is sorted in ascending order and hands have been exchanged"
+            elif swap_computer and colorstorm_played:
+                result_message = "Computer used Swap card and Colorstorm is played! Draw stack is reordered and hands have been exchanged"
             elif twopoints_computer:
-                result_message = "computer used two points card and gets 2 points"
-        
-        if draw_stack and len(player_hand) < 5: # Draw cards
-            player_draw_card()
-        if draw_stack and len(computer_hand) < 5:
-            computer_draw_card()
+                result_message = "Computer used two points card and gets 2 points"
+
+        if not result_message and not(joker_player or joker_computer):
+            if swap_player:
+                result_message = "Player used Swap! Hands have been exchanged"
+            elif swap_computer:
+                result_message = "Computer used Swap! Hands have been exchanged"
+                
+        draw_order = ["player", "computer"]
+        draw_order = shuffle(draw_order) # Makes drawing cards order random
+        for who in draw_order:
+            if draw_stack:
+                if who == "player" and len(player_hand) < 5:
+                    player_draw_card()
+                elif who == "computer" and len(computer_hand) < 5:
+                    computer_draw_card()
 
         return discard_pile, result_message, played_info
 
