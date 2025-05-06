@@ -71,6 +71,7 @@ last_player_wild_choice = None
 # Watcher card global variables
 player_card_history = None
 computer_card_history = None
+leftover_points = 0
 #ID: 5671165
 
 # Card class
@@ -570,6 +571,78 @@ def deal_cards():
 #ID: 5672969
 
 #ID: 5671165
+#Calculate leftover cards
+def process_leftover_card(card : Card, owner : str) -> None:
+    """Processes a leftover card at the end of the game and calculates their scores.
+
+    This function calculates the point of a leftover card based on its type 
+    and gives it to the appropriate player (player or computer). 
+    The card is then added to the discard pile. 
+
+    Args:
+        card (Card): The leftover card to process.
+        owner (str): The owner of the card "player" or "computer".
+
+    Returns:
+        None
+    """
+    global player_score, computer_score, discard_pile, leftover_points, game_state
+
+    if card.card_type == "regular":
+        leftover_points = card.number
+    elif card.card_type in ("wild", "watcher", "joker"):
+        leftover_points = 10
+    elif card.card_type in ("colorstorm", "ascendancy", "swap"):
+        leftover_points = 0
+    elif card.card_type in ("twopoints", "twopoints2"):
+        leftover_points = 2
+    if owner == "player":
+        player_score += leftover_points
+    else:
+        computer_score += leftover_points
+
+    discard_pile.append(card)
+#ID: 5671165
+
+#ID: 5672969 ######
+def check_game_over() -> None:
+    """Checks the end of the game and processes leftover cards.
+
+    This function checks if the game has ended according to:
+    - One card remains between both hands.
+    - Both players have one card remaining, and at least one is a Watcher card.
+    - No cards in the draw stack or either hand.
+
+    Returns:
+        None
+    """
+    global player_hand, computer_hand, game_state
+
+    #One card remains between both hands
+    if len(player_hand) == 1 and len(computer_hand) == 0:
+        process_leftover_card(player_hand.pop(), "player")
+        game_state = GAME_OVER
+    elif len(computer_hand) == 1 and len(player_hand) == 0:
+        process_leftover_card(computer_hand.pop(), "computer")
+        game_state = GAME_OVER
+
+    #Both players have one card remaining, and at least one is a Watcher card
+    elif len(player_hand) == 1 and len(computer_hand) == 1:
+        if player_hand[0].card_type == "watcher":
+            process_leftover_card(player_hand.pop(), "player")
+            process_leftover_card(computer_hand.pop(), "computer")
+            game_state = GAME_OVER
+        elif computer_hand[0].card_type == "watcher":
+            process_leftover_card(computer_hand.pop(), "computer")
+            process_leftover_card(player_hand.pop(), "player")
+            game_state = GAME_OVER
+
+    #No cards in the draw stack or either hand
+    elif len(draw_stack) == 0 and len(player_hand) == 0 and len(computer_hand) == 0:
+        game_state = GAME_OVER
+#ID: 5672969
+
+#ID: 5671165
 #Initialize Watcher queues
 def initialise_watcher_history() -> None:
     """Initialise history queues for Watcher card.
@@ -694,24 +767,6 @@ def computer_play_card() -> tuple[Card | None, bool]:
 
     return computer_hand.pop(index), False 
 #ID: 5672969, 5671165
-
-#ID: 5672969
-# Check if the game is over
-def check_game_over():
-    """Checks if the game is over.
-    
-    The game is considered over only when:
-    - The draw stack is empty AND
-    - Both players have no cards left to play
-    
-    Returns:
-        bool: True if the game is over, False otherwise.
-    """
-    if len(draw_stack) == 0 and len(player_hand) == 0 and len(computer_hand) == 0:
-        return True
-        
-    return False
-#ID: 5672969
 
 #ID: 5672969
 # Draw the winner display
@@ -1079,9 +1134,7 @@ def resolve_round(
     if draw_stack and len(computer_hand) < 5:
         computer_draw_card()
 
-    
-    if len(draw_stack) == 0 and len(player_hand) == 0 and len(computer_hand) == 0:
-        game_state = GAME_OVER
+    check_game_over()
 
     previous_player_card = player_played_card
     previous_computer_card = computer_played_card
@@ -1369,6 +1422,7 @@ def draw_game_board():
         play_again_button = None
     else:
         # Game is over - show winner
+        check_game_over()
         play_button = None
         play_again_button = draw_winner_display()
     
@@ -1377,6 +1431,7 @@ def draw_game_board():
     if game_state == GAME_OVER:
         return None, play_again_button
     else:
+        check_game_over()
         return play_button, None
 #ID: 5672969
 
@@ -1427,9 +1482,9 @@ def main():
         None
     """
     global player_score, computer_score, game_state, player_played_card, computer_played_card, result_message
-    global previous_player_card, previous_computer_card, played_card_message
-    global top_four_cards, player_used_wild, last_player_wild_choice
-    global player_card_history, computer_card_history
+    global previous_player_card, previous_computer_card, played_card_message, selected_card
+    global top_four_cards, player_used_wild, last_player_wild_choice, discard_pile
+    global player_card_history, computer_card_history, leftover_points
 
     # Initialize the game
     deal_cards()
@@ -1478,6 +1533,7 @@ def main():
             elif game_state == SHOWING_RESULT:
                 # Progress to next round when user clicks
                 if event.type == pygame.MOUSEBUTTONDOWN:
+                    check_game_over()
                     game_state = SELECTING_CARD
                     player_played_card = None
                     computer_played_card = None
@@ -1495,6 +1551,7 @@ def main():
                         play_button_rect = None
                         play_again_button_rect = None
                         computer_play_time = 0
+                        leftover_points = 0
                         player_played_card = None
                         computer_played_card = None
                         last_player_wild_choice = None
