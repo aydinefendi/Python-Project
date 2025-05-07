@@ -617,16 +617,18 @@ def check_game_over() -> None:
     Returns:
         None
     """
-    global player_hand, computer_hand, game_state, result_message
+    global player_hand, computer_hand, game_state, result_message, played_card_message
 
     #One card remains between both hands
     if len(player_hand) == 1 and len(computer_hand) == 0:
         result_message = "Game ended with 1 leftover card."
+        played_card_message = f"Player played: {player_played_card} | Computer played: {computer_played_card}"
         process_leftover_card(player_hand.pop(), "player")
         game_state = LAST_ROUND
 
     elif len(computer_hand) == 1 and len(player_hand) == 0:
         result_message = "Game ended with 1 leftover card."
+        played_card_message = f"Player played: {player_played_card} | Computer played: {computer_played_card}"
         process_leftover_card(computer_hand.pop(), "computer")
         game_state = LAST_ROUND
 
@@ -634,12 +636,14 @@ def check_game_over() -> None:
     elif len(player_hand) == 1 and len(computer_hand) == 1:
         if player_hand[0].card_type == "watcher":
             result_message = f"Game ended with 2 leftover cards."
+            played_card_message = f"Player played: {player_played_card} | Computer played: {computer_played_card}"
             process_leftover_card(player_hand.pop(), "player")
             process_leftover_card(computer_hand.pop(), "computer")
             game_state = LAST_ROUND
 
         elif computer_hand[0].card_type == "watcher":
             result_message = f"Game ended with 2 leftover cards."
+            played_card_message = f"Player played: {player_played_card} | Computer played: {computer_played_card}"
             process_leftover_card(computer_hand.pop(), "computer")
             process_leftover_card(player_hand.pop(), "player")
             game_state = LAST_ROUND
@@ -1141,7 +1145,7 @@ def resolve_round(
         player_draw_card()
     if draw_stack and len(computer_hand) < 5:
         computer_draw_card()
-
+    
     check_game_over()
 
     previous_player_card = player_played_card
@@ -1586,6 +1590,7 @@ def main():
             discard_pile, result_message, played_info = resolve_round(computer_used_wild, player_used_wild, last_player_wild_choice)
             player_used_wild = False  # reset after use
             last_player_wild_choice = None
+
 
             played_card_message = played_info  
             if game_state != GAME_OVER:  
