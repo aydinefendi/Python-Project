@@ -73,6 +73,7 @@ last_player_wild_choice = None
 player_card_history = None
 computer_card_history = None
 leftover_points = 0
+watcher_message = ""
 #ID: 5671165
 
 # Card class
@@ -745,13 +746,12 @@ def computer_play_card() -> tuple[Card | None, bool]:
     if not playable_cards:
         return None, False
     
-    index = random.randint(0, len(playable_cards) - 1)
-    card = computer_hand[index]
+    card = random.choice(playable_cards)
+    computer_hand.remove(card)
 
     #ID: 5671165
     if card.card_type == "wild":
         # Play and discard the wild card
-        computer_hand.pop(index)
         discard_card(card)
 
         # Choose source list(draw stack or discard pile) based on regular card availability
@@ -773,7 +773,7 @@ def computer_play_card() -> tuple[Card | None, bool]:
         return chosen_card, True
     #ID: 5671165
 
-    return computer_hand.pop(index), False 
+    return card, False 
 #ID: 5672969, 5671165
 
 #ID: 5672969
@@ -916,7 +916,7 @@ def resolve_round(
     global player_played_card, computer_played_card
     global player_score, computer_score, discard_pile, draw_stack
     global player_hand, computer_hand, game_state, result_message
-    global previous_player_card, previous_computer_card
+    global previous_player_card, previous_computer_card, watcher_message
     
     watcher_message = ""
 
@@ -1128,9 +1128,9 @@ def resolve_round(
 
     #Illustrate Watcher card message if executed
     if watcher_message:
-        round_message += " " + watcher_message
+        result_message += " " + watcher_message
 
-    result_message = round_message
+    result_message += round_message
 
     # Move played cards to discard pile
     discard_card(player_played_card)
@@ -1205,6 +1205,10 @@ def play_selected_card() -> bool:
     for i, card in enumerate(player_hand): ####
         if card.selected:
             card.selected = False
+            
+            if card.card_type == "watcher": #########
+                return False
+
             if card.card_type == "wild":
                 wild_card_logic()
                 discard_card(card)
@@ -1501,7 +1505,7 @@ def main():
     global player_score, computer_score, game_state, player_played_card, computer_played_card, result_message
     global previous_player_card, previous_computer_card, played_card_message, selected_card
     global top_four_cards, player_used_wild, last_player_wild_choice, discard_pile
-    global player_card_history, computer_card_history, leftover_points
+    global player_card_history, computer_card_history, leftover_points, watcher_message
 
     # Initialize the game
     deal_cards()
@@ -1574,6 +1578,7 @@ def main():
                         last_player_wild_choice = None
                         result_message = ""
                         played_card_message = ""
+                        watcher_message = ""
                         game_state = SELECTING_CARD
             
             elif game_state == LAST_ROUND:
