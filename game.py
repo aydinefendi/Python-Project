@@ -1075,8 +1075,6 @@ def resolve_round(
                 result_message = "Swap and Ascendancy are played! Draw stack is sorted and hands are swapped"
             elif swap_player and colorstorm_played:
                 result_message = "Swap and Colorstorm are played! Draw stack is reordered and hands are swapped"
-            elif twopoints_player:
-                result_message = "Player used two points card and gets 2 points"
                 
             elif twopoints_computer and colorstorm_played:
                 result_message = "Two points and Colorstorm are played! Computer gets 2 points and draw stack is reordered"
@@ -1088,6 +1086,8 @@ def resolve_round(
                 result_message = "Swap and Ascendancy are played! Draw stack is sorted and hands are swapped"
             elif swap_computer and colorstorm_played:
                 result_message = "Swap and Colorstorm are played! Draw stack is reordered and hands are swapped"
+            elif twopoints_player:
+                result_message = "Player used two points card and gets 2 points"
             elif twopoints_computer:
                 result_message = "Computer used two points card and gets 2 points"
 
