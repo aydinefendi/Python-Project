@@ -40,6 +40,7 @@ WAITING_FOR_COMPUTER = 1
 SHOWING_RESULT = 2
 GAME_OVER = 3
 WILD_CARD = 4
+LAST_ROUND = 5
 game_state = SELECTING_CARD
 
 #ID: 5670726
@@ -376,7 +377,7 @@ class MaxHeap:
         return largest
 #ID: 5671165
 
-#ID: 5671165 #######
+#ID: 5671165
 class Queue:
     """Fixed size queue implementation using lists.
         
@@ -604,7 +605,7 @@ def process_leftover_card(card : Card, owner : str) -> None:
     discard_pile.append(card)
 #ID: 5671165
 
-#ID: 5672969 ######
+#ID: 5672969
 def check_game_over() -> None:
     """Checks the end of the game and processes leftover cards.
 
@@ -616,30 +617,37 @@ def check_game_over() -> None:
     Returns:
         None
     """
-    global player_hand, computer_hand, game_state
+    global player_hand, computer_hand, game_state, result_message
 
     #One card remains between both hands
     if len(player_hand) == 1 and len(computer_hand) == 0:
+        result_message = "Game ended with 1 leftover card."
         process_leftover_card(player_hand.pop(), "player")
-        game_state = GAME_OVER
+        game_state = LAST_ROUND
+
     elif len(computer_hand) == 1 and len(player_hand) == 0:
+        result_message = "Game ended with 1 leftover card."
         process_leftover_card(computer_hand.pop(), "computer")
-        game_state = GAME_OVER
+        game_state = LAST_ROUND
 
     #Both players have one card remaining, and at least one is a Watcher card
     elif len(player_hand) == 1 and len(computer_hand) == 1:
         if player_hand[0].card_type == "watcher":
+            result_message = f"Game ended with 2 leftover cards."
             process_leftover_card(player_hand.pop(), "player")
             process_leftover_card(computer_hand.pop(), "computer")
-            game_state = GAME_OVER
+            game_state = LAST_ROUND
+
         elif computer_hand[0].card_type == "watcher":
+            result_message = f"Game ended with 2 leftover cards."
             process_leftover_card(computer_hand.pop(), "computer")
             process_leftover_card(player_hand.pop(), "player")
-            game_state = GAME_OVER
+            game_state = LAST_ROUND
 
     #No cards in the draw stack or either hand
     elif len(draw_stack) == 0 and len(player_hand) == 0 and len(computer_hand) == 0:
-        game_state = GAME_OVER
+        result_message = "Game ended. No cards left to play or draw."
+        game_state = LAST_ROUND
 #ID: 5672969
 
 #ID: 5671165
@@ -702,7 +710,7 @@ def draw_played_cards():
         screen.blit(text, (computer_x + CARD_WIDTH // 2 - text.get_width() // 2, computer_y - 30))
     
     # Draw result message if in SHOWING_RESULT state
-    if game_state == SHOWING_RESULT and result_message:
+    if (game_state == SHOWING_RESULT or game_state == LAST_ROUND) and result_message:
         font = pygame.font.SysFont(None, 36)
         text = font.render(result_message, True, WHITE)
         screen.blit(text, (SCREEN_WIDTH // 2 - text.get_width() // 2, SCREEN_HEIGHT // 2 + 100))
@@ -1414,6 +1422,8 @@ def draw_game_board():
             instruction_text = font.render("Waiting for computer to play...", True, WHITE)
         elif game_state == SHOWING_RESULT:
             instruction_text = font.render("Click anywhere to continue", True, WHITE)
+        elif game_state == LAST_ROUND:
+            instruction_text = font.render("Game over! Click anywhere to see the winner.", True, WHITE)
         else:
             instruction_text = font.render("", True, WHITE)
         
@@ -1422,7 +1432,6 @@ def draw_game_board():
         play_again_button = None
     else:
         # Game is over - show winner
-        check_game_over()
         play_button = None
         play_again_button = draw_winner_display()
     
@@ -1430,8 +1439,15 @@ def draw_game_board():
     
     if game_state == GAME_OVER:
         return None, play_again_button
-    else:
+
+    elif game_state in [SELECTING_CARD, WAITING_FOR_COMPUTER, SHOWING_RESULT, WILD_CARD]:
         check_game_over()
+        return play_button, None
+
+    elif game_state == LAST_ROUND:
+        return play_button, None
+
+    else:
         return play_button, None
 #ID: 5672969
 
@@ -1477,6 +1493,7 @@ def main():
     - User input
     - Game over conditions
     - Wild card implementation
+    - Last round resolving
 
     Returns:
         None
@@ -1515,7 +1532,7 @@ def main():
                         selected_card = handle_card_selection(event.pos)
 
             # Handles user input if the Wild card is selected
-            if game_state == WILD_CARD:  #######
+            if game_state == WILD_CARD:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     for card in top_four_cards:
                         if card.rect.collidepoint(event.pos):
@@ -1556,8 +1573,13 @@ def main():
                         computer_played_card = None
                         last_player_wild_choice = None
                         result_message = ""
+                        played_card_message = ""
                         game_state = SELECTING_CARD
-        
+            
+            elif game_state == LAST_ROUND:
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    game_state = GAME_OVER
+
         # Handle computer's turn
         if game_state == WAITING_FOR_COMPUTER and current_time >= computer_play_time:
             computer_played_card, computer_used_wild = computer_play_card()
