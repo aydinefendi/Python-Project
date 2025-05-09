@@ -503,6 +503,7 @@ def initialize_deck():
     return deck
 #ID: 5672969
 
+#ID: 5671165
 #Adds a card to the discard pile
 def discard_card(card: Card) -> None:
     """Adds a Card instance to the discard pile.
@@ -672,6 +673,7 @@ def initialise_watcher_history() -> None:
     computer_card_history = Queue(2)
 #ID: 5671165
 
+#ID: 5672969
 # Draw player's hand
 def draw_player_hand():
     ''' Draws the player's hand '''
@@ -1206,11 +1208,11 @@ def play_selected_card() -> bool:
     """
     global player_hand, player_played_card, game_state
 
-    for i, card in enumerate(player_hand): ####
+    for i, card in enumerate(player_hand):
         if card.selected:
             card.selected = False
             
-            if card.card_type == "watcher": #########
+            if card.card_type == "watcher":
                 return False
 
             if card.card_type == "wild":
@@ -1258,6 +1260,7 @@ def draw_scores_and_messages():
     screen.blit(played, (SCREEN_WIDTH // 2 - played.get_width() // 2, 10))
 #ID: 5670726
 
+#ID: 5671165
 # Draw the draw_stack
 def draw_draw_stack() -> None:
     """Draws the draw stack on the screen with small positional adjustment between each card.
@@ -1278,7 +1281,7 @@ def draw_draw_stack() -> None:
     font = pygame.font.SysFont(None, 36)
     draw_stack_text = font.render("Draw stack", True, WHITE)
     text_x = base_x + 10
-    text_y = base_y - CARD_HEIGHT // 2 - 40
+    text_y = base_y - CARD_HEIGHT // 2 - 60
     screen.blit(draw_stack_text, (text_x, text_y))
 
     #Draw each card in the draw stack faced down
@@ -1300,7 +1303,7 @@ def draw_discard_pile() -> None:
     Returns:
         None
     """
-    base_x = SCREEN_WIDTH - CARD_WIDTH - 100
+    base_x = SCREEN_WIDTH - CARD_WIDTH - 123
     base_y = (SCREEN_HEIGHT // 2) - (CARD_HEIGHT // 2)
     # Adjustment to show the pile effect
     adjustment = 2.3
@@ -1309,7 +1312,7 @@ def draw_discard_pile() -> None:
     font = pygame.font.SysFont(None, 36)
     draw_stack_text = font.render("Discard pile", True, WHITE)
     text_x = base_x + 10
-    text_y = base_y - CARD_HEIGHT // 2 - 40
+    text_y = base_y - CARD_HEIGHT // 2 - 60
     screen.blit(draw_stack_text, (text_x, text_y))
 
     #Draw each card in the discard pile faced down
