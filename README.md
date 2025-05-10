@@ -1,6 +1,6 @@
 # War of Colors
 
-A strategic Python-based card game created using Pygame, featuring regular and special cards, score tracking, and game logic for both human and computer players.
+A Python-based card game created using Pygame, featuring regular and special cards, score tracking, and game logic for both human and computer players.
 
 ## Objective
 
