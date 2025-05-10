@@ -1,3 +1,26 @@
+"""
+Libraries used:
+-pygame
+-os
+-random
+-sys
+-time
+-collections.defaultdict
+
+Data structures used:
+-List
+-Tuple
+-Dictionary(defaultdict)
+-class
+
+Algorithms used:
+-Fisher-Yates Shuffle algorithm
+-Quicksort algorithm
+-Max-Heap (custom class)
+-Round Resolution Logic
+-Game State Machine
+"""
+
 import pygame
 import os
 import random
@@ -80,7 +103,7 @@ watcher_message = ""
 #ID: 5672969, 5671165
 class Card:
     def __init__(self, color, number, card_type="regular"):
-        ''' Initializes the card with the given color, number, and card type '''
+        """ Initializes the card with the given color, number, and card type"""
         self.color = color
         self.number = number
         self.card_type = card_type  #regular, wild, watcher, colorstorm, ascendancy, add two points
@@ -479,7 +502,7 @@ def has_regular(cards: list[Card]) -> bool:
 #ID: 5672969
 # Initialize the deck
 def initialize_deck():
-    ''' Initializes the deck of cards '''
+    """ Initializes the deck of cards"""
     deck = []
     colors = ["Red", "Blue", "Green", "Yellow"]
     
@@ -676,7 +699,7 @@ def initialise_watcher_history() -> None:
 #ID: 5672969
 # Draw player's hand
 def draw_player_hand():
-    ''' Draws the player's hand '''
+    """Draws the player's hand"""
     # Calculate the total width of all cards with spacing
     total_width = len(player_hand) * CARD_WIDTH + (len(player_hand) - 1) * CARD_SPACING
     
@@ -693,7 +716,7 @@ def draw_player_hand():
 #ID: 5672969
 # Draw played cards
 def draw_played_cards():
-    ''' Draws the played cards in the center of the screen '''
+    """Draws the played cards in the center of the screen"""
     if player_played_card:
         # Player's played card (left side)
         player_x = SCREEN_WIDTH // 2 - CARD_WIDTH - 30
