@@ -10,15 +10,15 @@ Two players (you vs the computer) take turns playing cards from their hands. Poi
 
 ## Features
 
-- 🎮 Intuitive Pygame-based GUI
-- 🃏 Regular and 4 types of special cards (`Wild`, `Watcher`, `Colorstorm`, `Ascendancy`)
-- 🔄 Shuffle deck using **Fisher-Yates** algorithm
-- ♻️ Dynamic draw stack and discard pile
-- 🤖 AI randomly selects a card to play
-- 🎨 Card selection, play button interaction, and result display
-- 🧠 Bonus point logic and state tracking across rounds
-- 📈 Game over detection and replay option
-- 🔊 Background music for improved game experience
+-  Intuitive Pygame-based GUI
+-  Regular and 4 types of special cards (`Wild`, `Watcher`, `Colorstorm`, `Ascendancy`)
+-  Shuffle deck using **Fisher-Yates** algorithm
+-  Dynamic draw stack and discard pile
+-  AI randomly selects a card to play
+-  Card selection, play button interaction, and result display
+-  Bonus point logic and state tracking across rounds
+-  Game over detection and replay option
+-  Background music for improved game experience
 
 ---
 
