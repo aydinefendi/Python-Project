@@ -70,7 +70,16 @@ The program uses **two or more standard data structures (Lists, Classes)** and l
 
 ## How to Run
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/aydinefendi/Python-Project.git
-   cd Python-Project
+1. Clone the repository using the command:
+   `git clone https://github.com/aydinefendi/Python-Project.git`  
+   Then navigate into the project folder: `cd Python-Project`.
+
+3. Create a virtual environment:
+   - On macOS/Linux: use `python3 -m venv .venv` and activate it with `source .venv/bin/activate`.
+   - On Windows: use `python -m venv .venv` and activate it with `.venv\Scripts\activate`.
+
+4. Install pygame manually using `pip install pygame`
+
+5. Run the game with `python game.py`.
+
+
