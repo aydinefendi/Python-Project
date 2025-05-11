@@ -501,7 +501,7 @@ def has_regular(cards: list[Card]) -> bool:
 
 #ID: 5672969
 # Initialize the deck
-def initialize_deck():
+def initialise_deck():
     """ Initializes the deck of cards"""
     deck = []
     colors = ["Red", "Blue", "Green", "Yellow"]
@@ -589,7 +589,7 @@ def deal_cards():
     player_score = 0
     computer_score = 0
     
-    draw_stack = initialize_deck()
+    draw_stack = initialise_deck()
     player_hand = [draw_stack.pop() for _ in range(5)]
     computer_hand = [draw_stack.pop() for _ in range(5)]
     discard_pile = []
